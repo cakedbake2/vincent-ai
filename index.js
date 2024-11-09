@@ -59,8 +59,18 @@ async function audioTranscription(buffer) {
 }
 
 const client = new discord.Client({
-	intents: discord.Intents.FLAGS.ALL // If you don't need all intents, specify only necessary ones here.
-});
+	intents: [
+		discord.GatewayIntentBits.Guilds,
+		discord.GatewayIntentBits.GuildMessages,
+		discord.GatewayIntentBits.GuildMessageReactions,
+		discord.GatewayIntentBits.GuildMembers,
+		discord.GatewayIntentBits.GuildMessageTyping,
+		discord.GatewayIntentBits.DirectMessages,
+		discord.GatewayIntentBits.DirectMessageReactions,
+		discord.GatewayIntentBits.DirectMessageTyping,
+		discord.GatewayIntentBits.MessageContent
+	]
+  });
 
 function isBlacklisted(id) {
 	if (!fs.existsSync("blacklist.json")) return false;
