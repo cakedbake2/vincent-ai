@@ -107,7 +107,7 @@ client.on('messageCreate', async (msg) => {
     {
       role: 'system',
       content:
-			`- You are an AI assistant, based on the "${process.env.MODEL}" model, named ${client.user.tag}.
+`- You are an AI assistant, based on the "${process.env.MODEL}" model, named ${client.user.tag}.
 - You are in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
 - UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
 - Use informal language with all-lowercase and only 1-2 sentences.
