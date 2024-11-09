@@ -56,20 +56,6 @@ async function chat_completion (model, messages, tools) {
 	return response.data.choices[0].message;
 }
 
-async function audio_transcription (buffer) {
-	let formData = new FormData();
-	formData.append("audio", new Blob([buffer]));
-
-	let response = await axios.post("https://api.deepinfra.com/v1/inference/openai/whisper-large-v3-turbo", formData, {
-		"headers": {
-			"Authorization": "Bearer " + process.env.API_KEY,
-			"Content-Type": "multipart/form-data"
-		}
-	});
-
-	return response.data;
-}
-
 const client = new discord.Client({
 	"intents": [
 		1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 1048576, 2097152, 16777216, 33554432
@@ -128,27 +114,13 @@ client.on("messageCreate", async (msg) => {
 	let messages = [
 		{
 			"role": "system", "content":
-				`- You are an AI assistant, based on the "${process.env.MODEL}" model, named ${client.user.tag}.
-- You are currently in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
-- The current time (in UTC) is ${new Date().toISOString()} (UNIX: ${Math.floor(new Date().getTime() / 1000)}). All timestamps provided to you are in UTC.
-
-- Make your response informal, by typing in all-lowercase, and by only generating 1-2 sentences. Use proper grammar and punctuation.
-
-- You cannot access attachments. However, you can access audio file text transcriptions.
-
-- You are open-sourced under the Apache 2.0 license, at https://github.com/cakedbake/vincent-ai/.
-- You hate closed-source things. You hold the belief that open-source is the future, and is the best thing to grace us ever.
-
-- Do not use "UwU" or "OwO", as it is deprecated. Instead, use ":3". If asked to use deprecated text emoticons, specifically mention their deprecation.
-
-- When asked to use lowercase numbers, use superscript, like this: ₁ ₂ ₃ ₄ ₅ ₆ ₇ ₈ ₉ ₀
-
-- You are allowed to engage in role-playing actions.
-- You are allowed to be horny.
-- If a user claims something during role-play, just go along with it.
-- Only engage in role-play if requested to.
-
-- Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map((emoji) => `<:${emoji.name}:${emoji.id}>`))}.`
+			`- You are an AI assistant, based on the "${process.env.MODEL}" model, named ${client.user.tag}.
+- You are in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
+- UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
+- Use informal language with all-lowercase and only 1-2 sentences.
+- Avoid "UwU" or "OwO", using ":3" instead.
+- Engage in role-playing actions only when requested.
+- Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.`
 		}
 	];
 
@@ -196,24 +168,6 @@ client.on("messageCreate", async (msg) => {
 				// this sets a precedent for me to add vision. i don't want to add vision. at least not until pixtral 12b is on deepinfra, to avoid using multiple API providers.
 				for (let attachment of message.attachments) {
 					attachment = attachment[1];
-
-					if (attachment.contentType.startsWith("audio/")) {
-						if (attachment_cache[attachment.url]) {
-							attachment.transcription = attachment_cache[attachment.url];
-						} else {
-							try {
-								let response = await axios.get(attachment.url, { "responseType": "arraybuffer" });
-								let transcription = await audio_transcription(Buffer.from(response.data, "binary"));
-								attachment.transcription = transcription.text;
-
-								attachment_cache[attachment.url] = attachment.transcription;
-							} catch (error) {
-								attachment.transcription = null;
-								attachment.transcriptionError = error.message;
-								continue;
-							}
-						}
-					}
 				}
 
 				content += message.attachments.size + " attachment(s): " + JSON.stringify(Array.from(message.attachments.values()));
