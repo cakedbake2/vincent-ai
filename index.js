@@ -149,7 +149,6 @@ client.on('messageCreate', async (msg) => {
       if (message.attachments.size > 0) {
         content += '\n\n'
 
-        // this sets a precedent for me to add vision. i don't want to add vision. at least not until pixtral 12b is on deepinfra, to avoid using multiple API providers.
         for (let attachment of message.attachments) {
           attachment = attachment[1]
         }
