@@ -140,22 +140,12 @@ client.on("messageCreate", async (msg) => {
 			}
 
 			content += new Date().toISOString() + "\n";
-
-			content += "<@" + message.author.tag + ">";
-
-			if (message.author.nickname) {
-				content += " (" + message.author.nickname + ")";
-			}
-
-			if (message.author.bot) { content += " (BOT)"; }
-
-			if (message.editedTimestamp) { content += " (edited)"; }
-
-			// type 19 = reply
-			if (message.type == 19) { content += " (replying to <@" + channelMessages.get(message.reference.messageId)?.author?.id || "unknown" + "]>)"; }
-
-			content += ":\n";
-			content += message.content;
+			content += `<@${message.author.tag}>`;
+			if (message.author.nickname) content += ` (${message.author.nickname})`;
+			if (message.author.bot) content += " (BOT)";
+			if (message.editedTimestamp) content += " (edited)";
+			if (message.type === "REPLY") content += ` (replying to <@${message.reference.messageId || "unknown"}>)`;
+			content += `:\n${message.content}`;
 
 			client.users.cache.forEach((user) => { content = content.replaceAll("<@" + user.id + ">", "<@" + user.tag + ">"); }); // replace <@12345678> with <@username>
 			client.users.cache.forEach((user) => { content = content.replaceAll("<@!" + user.id + ">", "<@" + user.tag + ">"); }); // replace <@!12345678> with <@username>
