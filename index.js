@@ -113,7 +113,8 @@ client.on('messageCreate', async (msg) => {
 - Use informal language with all-lowercase and only 1-2 sentences.
 - Avoid "UwU" or "OwO", using ":3" instead.
 - Engage in role-playing actions only when requested.
-- Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.`
+- Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
+- Backticks break pings. Only use backticks if absolutely necessary.`
     }
   ]
 
