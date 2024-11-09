@@ -15,17 +15,17 @@ const m = 'Please set it in your .env file or as an environment variable.'
 const x = () => {} // to be used where error handling is not needed
 
 if (!process.env.API_KEY) {
-  console.error('Missing API_KEY variable. Please set it in your .env file or as an environment variable.')
+  console.error('Missing API_KEY variable.' + m)
   process.exit(1)
 }
 
 if (!process.env.DISCORD_TOKEN) {
-  console.error('Missing DISCORD_TOKEN variable. Please set it in your .env file or as an environment variable.')
+  console.error('Missing DISCORD_TOKEN variable.' + m)
   process.exit(1)
 }
 
 if (!process.env.MODEL) {
-  console.error('Missing MODEL variable. Please set it in your .env file or as an environment variable.')
+  console.error('Missing MODEL variable.' + m)
   process.exit(1)
 }
 
@@ -66,8 +66,8 @@ function isBlacklisted (id) {
   if (!fs.existsSync('blacklist.json')) { return false }
 
   try {
-    blacklist = JSON.parse(fs.readFileSync('blacklist.json').toString()) // well timed file deletion causes a race condition
-    return blacklist.includes(id)
+    return JSON.parse(fs.readFileSync('blacklist.json').toString()).includes(id)
+    // file deletion can cause a race condition here
   } catch (error) {
     console.warn('A blacklist.json exists, but is not valid JSON!', error.message)
 
@@ -123,12 +123,12 @@ client.on('messageCreate', async (msg) => {
   for (let message of channelMessages) {
     message = message[1]
 
-    if (message.author.id == client.user.id) {
+    if (message.author.id === client.user.id) {
       messages.push({ role: 'assistant', content: message.content })
     } else {
       let content = ''
 
-      if (message.type == 7) {
+      if (message.type === 7) {
         messages.push({ role: 'user', content: `<@${message.author.id}> joined the server.` })
         continue
       }
@@ -138,7 +138,7 @@ client.on('messageCreate', async (msg) => {
       if (message.author.nickname) content += ` (${message.author.nickname})`
       if (message.author.bot) content += ' (BOT)'
       if (message.editedTimestamp) content += ' (edited)'
-      if (message.type === 'REPLY') content += ` (replying to <@${message.reference.messageId || 'unknown'}>)`
+      if (message.type === 19) content += ` (replying to <@${message.reference.messageId || 'unknown'}>)`
       content += `:\n${message.content}`
 
       client.users.cache.forEach((user) => { content = content.replaceAll('<@' + user.id + '>', '<@' + user.tag + '>') }) // replace <@12345678> with <@username>
@@ -187,7 +187,7 @@ client.on('messageCreate', async (msg) => {
 
   clearInterval(typer)
 
-  if (reply.content == '') { return }
+  if (reply.content === '') { return }
 
   if (reply.content.length > 2000) {
     reply.files.push(new discord.AttachmentBuilder(Buffer.from(reply.content), { name: 'message.txt' }))
