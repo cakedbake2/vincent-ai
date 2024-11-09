@@ -173,5 +173,5 @@ client.login(process.env.DISCORD_TOKEN);
 
 client.on("ready", () => {
 	console.log(`Ready on ${client.user.tag}`);
-	client.user.setActivity("free ballpoint hammer giveaway at 123 fazbear st", { type: discord.ActivityType.CUSTOM });
+	// client.user.setActivity("free ballpoint hammer giveaway at 123 fazbear st", { type: discord.ActivityType.CUSTOM });
 });
