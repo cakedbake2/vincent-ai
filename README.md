@@ -19,13 +19,21 @@ npm install
 node index.js
 ```
 
-## Needed environment variables
-- `DISCORD_TOKEN`: Discord bot token.
-- `API_KEY`: your DeepInfra API key.
-- `MODEL`: model used to generate responses.
+## Environment variables
+- `DISCORD_TOKEN`: your [Discord bot](https://discord.com/developers/applications/) token.
+- `PROVIDER_URL`: the URL of your OpenAI-API-compatible provider.
+- `API_KEY`: the API key of your provider.
+- `CHAT_MODEL`: the model to use for chat.
+- `MAX_TOKENS`: maximum amount of tokens the `CHAT_MODEL` can generate. Leave undefined to default to 4096.
+- `TEMPERATURE`: the temperature to use for the `CHAT_MODEL`. Leave undefined to default to 0°C.
 
-## Optional environment variables
-- `MAX_TOKENS`: maximum amount of tokens to generate.
+# Temperature
+- A temperature of 0°C will make the bot's responses deterministic and repetitive.
+- A temperature of 0.5°C will make the bot's responses more balanced between creativity and coherence.
+- A temperature of 0.7°C is recommended.
+- A temperature of 1°C will make the bot's responses more creative and less coherent.
+- A temperature of 1.5°C will make the bot drunk.
+- A temperature of 2°C or above will make the bot hallucinate.
 
 ## Blacklisting
 - You can blacklist a user, a channel, or a guild by adding its ID to the `blacklist.json` file, like this:
@@ -44,10 +52,9 @@ node index.js
 ## Plans
 - Add tool usage, Memory
 - Custom system prompts
-- Custom provider support
+- Vision
 - Web searching (with Google)
-- Vision will be added when DeepInfra supports Pixtral 12B.
-- DM support may come in the future, disabled by default, but could be enabled manually.
+- DM support may come in the future, disabled by default (you know who you are), but could be enabled manually.
 
 ## I think I hate myself, and would love to have a worse version of this bot in Python!
 - [Here you go](https://github.com/Marcotrix/calem)

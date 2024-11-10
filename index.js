@@ -1,59 +1,52 @@
 #!/usr/bin/node
 
-const axios = require('axios')
-const discord = require('discord.js')
-const fs = require('fs')
+// TO-DO: switch to Python
+import SamAltman from 'openai'
+import discord from 'discord.js'
+import fs from 'fs'
+import dotenv from 'dotenv'
+import validator from 'validator'
 
 try {
-  require('dotenv').config()
+  dotenv.config()
 } catch {
   // assume environment variables are set in the environment
 }
 
-const m = 'Please set it in your .env file or as an environment variable.'
-
 const x = () => {} // to be used where error handling is not needed
 
-if (!process.env.API_KEY) {
-  console.error('Missing API_KEY variable.' + m)
-  process.exit(1)
-}
+const m = 'Please set it in your .env file or as an environment variable.'
 
-if (!process.env.DISCORD_TOKEN) {
-  console.error('Missing DISCORD_TOKEN variable.' + m)
-  process.exit(1)
-}
+/*
+## Environment variables
+- `DISCORD_TOKEN`: your [Discord bot](https://discord.com/developers/applications/) token.
+- `PROVIDER`: the URL of your provider.
+- `API_KEY`: the API key of your provider.
+- `CHAT_MODEL`: the model to use for chat.
+- `MAX_TOKENS`: maximum amount of tokens the `CHAT_MODEL` can generate.
+- `TEMPERATURE`: the temperature to use for the `CHAT_MODEL`.
+- `VISION_MODEL`: the model to use for vision (image attachments). Leave empty to disable.
+- `STT_MODEL`: the model to use for speech-to-text (audio attachments). Leave empty to disable.
+*/
 
-if (!process.env.MODEL) {
-  console.error('Missing MODEL variable.' + m)
-  process.exit(1)
-}
+if (!process.env.DISCORD_TOKEN) { console.error('DISCORD_TOKEN is not set!', m); process.exit(1) }
+
+if (!validator.isURL(process.env.PROVIDER_URL)) { console.error('PROVIDER_URL is not a valid URL!', m); process.exit(1) }
+
+if (!process.env.API_KEY) { console.error('API_KEY is not set!', m); process.exit(1) }
+
+if (!process.env.CHAT_MODEL) { console.error('CHAT_MODEL is not set!', m); process.exit(1) }
 
 process.env.MAX_TOKENS = Number(process.env.MAX_TOKENS)
+if (!process.env.MAX_TOKENS) { console.warn('MAX_TOKENS is not set, defaulting to 4096.', m); process.env.MAX_TOKENS = 4096 }
 
-if (!process.env.MAX_TOKENS) { // NaN is not truthy
-  console.warn('Missing or invalid MAX_TOKENS variable. Defaulting to 1024.')
-  process.env.MAX_TOKENS = 1024
-}
+process.env.TEMPERATURE = Number(process.env.TEMPERATURE)
+if (isNaN(process.env.TEMPERATURE)) { console.error('TEMPERATURE is not set, defaulting to 0.', m); process.env.TEMPERATURE = 0 }
 
-// customize if need be
-async function chat_completion (model, messages, tools) {
-  const response = await axios.post('https://api.deepinfra.com/v1/openai/chat/completions', {
-    model,
-    messages,
-    tools,
-    temperature: 0.0,
-    max_tokens: process.env.MAX_TOKENS,
-    stream: false
-  }, {
-    headers: {
-      Authorization: `Bearer ${process.env.API_KEY}`,
-      'Content-Type': 'application/json'
-    }
-  })
-
-  return response.data.choices[0].message
-}
+const provider = new SamAltman({
+  apiKey: process.env.API_KEY,
+  baseURL: process.env.PROVIDER_URL
+})
 
 const client = new discord.Client({
   intents: [
@@ -67,7 +60,7 @@ function isBlacklisted (id) {
 
   try {
     return JSON.parse(fs.readFileSync('blacklist.json').toString()).includes(id)
-    // file deletion can cause a race condition here
+    // file deletion can cause a race condition here, so
   } catch (error) {
     console.warn('A blacklist.json exists, but is not valid JSON!', error.message)
 
@@ -107,7 +100,7 @@ client.on('messageCreate', async (msg) => {
     {
       role: 'system',
       content:
-`- You are an AI assistant, based on the "${process.env.MODEL}" model, named ${client.user.tag}.
+`- You are an AI assistant, based on the "${process.env.CHAT_MODEL}" model, named ${client.user.tag}.
 - You are in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
 - UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
 - Use informal language with all-lowercase and only 1-2 sentences.
@@ -169,16 +162,17 @@ client.on('messageCreate', async (msg) => {
 
   const reply = { content: '', files: [], embeds: [] }
 
-  try {
-    const response = await chat_completion(process.env.MODEL, messages)
-    reply.content = response.content
+console.log(messages)
 
-    // what a mess!
-    // TO-DO: export to function
-    client.users.cache.forEach((user) => { reply.content = reply.content.replaceAll('<@' + user.tag + '>', '<@' + user.id + '>') }) // replace <@username> with <@12345678>
-    client.users.cache.forEach((user) => { reply.content = reply.content.replaceAll('<@!' + user.tag + '>', '<@!' + user.id + '>') }) // replace <@!username> with <@!12345678>
-    client.channels.cache.forEach((channel) => { reply.content = reply.content.replaceAll('<#' + channel.name + '>', '<#' + channel.id + '>') }) // replace <#channel> with <#12345678>
-    msg.guild.roles.cache.forEach((role) => { reply.content = reply.content.replaceAll('<@&' + role.name + '>', '<@&' + role.id + '>') }) // replace <@&role> with <@&12345678>
+  try {
+    const response = await provider.chat.completions.create({
+      model: process.env.CHAT_MODEL,
+      messages: messages,
+      max_tokens: process.env.MAX_TOKENS,
+      temperature: process.env.TEMPERATURE
+    })
+
+    reply.content = response.choices[0].message.content
   } catch (error) {
     reply.content = '⚠️ ' + error.message
     reply.files.push(new discord.AttachmentBuilder(Buffer.from(JSON.stringify(error.response?.data || error.stack, null, 4)), { name: 'error.json' }))
@@ -187,6 +181,13 @@ client.on('messageCreate', async (msg) => {
   clearInterval(typer)
 
   if (reply.content === '') { return }
+
+  // what a mess!
+  // TO-DO: export to function
+  client.users.cache.forEach((user) => { reply.content = reply.content.replaceAll('<@' + user.tag + '>', '<@' + user.id + '>') }) // replace <@username> with <@12345678>
+  client.users.cache.forEach((user) => { reply.content = reply.content.replaceAll('<@!' + user.tag + '>', '<@!' + user.id + '>') }) // replace <@!username> with <@!12345678>
+  client.channels.cache.forEach((channel) => { reply.content = reply.content.replaceAll('<#' + channel.name + '>', '<#' + channel.id + '>') }) // replace <#channel> with <#12345678>
+  msg.guild.roles.cache.forEach((role) => { reply.content = reply.content.replaceAll('<@&' + role.name + '>', '<@&' + role.id + '>') }) // replace <@&role> with <@&12345678>
 
   if (reply.content.length > 2000) {
     reply.files.push(new discord.AttachmentBuilder(Buffer.from(reply.content), { name: 'message.txt' }))
