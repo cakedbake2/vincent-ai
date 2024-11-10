@@ -19,7 +19,8 @@ const m = 'Please set it in your .env file or as an environment variable.'
 
 if (!process.env.DISCORD_TOKEN) { console.error('DISCORD_TOKEN is not set!', m); process.exit(1) }
 
-if (!validator.isURL(process.env.PROVIDER_URL)) { console.error('PROVIDER_URL is not a valid URL!', m); process.exit(1) }
+if (!validator.isURL(process.env.PROVIDER_URL)) { console.warn('PROVIDER_URL is not a valid URL! Defaulting to OpenAI...'); process.env.PROVIDER_URL = "" }
+// empty baseURL makes the library default to OpenAI
 
 if (!process.env.API_KEY) { console.error('API_KEY is not set!', m); process.exit(1) }
 
