@@ -56,6 +56,3 @@ node index.js
 - Vision
 - Web searching (with Google)
 - DM support may come in the future, disabled by default (you know who you are), but could be enabled manually.
-
-## I think I hate myself, and would love to have a worse version of this bot in Python!
-- [Here you go](https://github.com/Marcotrix/calem)
