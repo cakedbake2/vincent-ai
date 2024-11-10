@@ -88,9 +88,9 @@ client.on('messageCreate', async (msg) => {
   // may need to be reduced to accomodate worse internet connections
 
   // fetch 100 messages
-  let channelMessages
   try {
-    channelMessages = await msg.channel.messages.fetch({ limit: 100 }) // variable scopes are woke nonsense
+    // eslint-disable-next-line no-var
+    var channelMessages = await msg.channel.messages.fetch({ limit: 100 })
   } catch {
     clearInterval(typer)
     return
