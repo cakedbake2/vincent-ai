@@ -17,18 +17,6 @@ const x = () => {} // to be used where error handling is not needed
 
 const m = 'Please set it in your .env file or as an environment variable.'
 
-/*
-## Environment variables
-- `DISCORD_TOKEN`: your [Discord bot](https://discord.com/developers/applications/) token.
-- `PROVIDER`: the URL of your provider.
-- `API_KEY`: the API key of your provider.
-- `CHAT_MODEL`: the model to use for chat.
-- `MAX_TOKENS`: maximum amount of tokens the `CHAT_MODEL` can generate.
-- `TEMPERATURE`: the temperature to use for the `CHAT_MODEL`.
-- `VISION_MODEL`: the model to use for vision (image attachments). Leave empty to disable.
-- `STT_MODEL`: the model to use for speech-to-text (audio attachments). Leave empty to disable.
-*/
-
 if (!process.env.DISCORD_TOKEN) { console.error('DISCORD_TOKEN is not set!', m); process.exit(1) }
 
 if (!validator.isURL(process.env.PROVIDER_URL)) { console.error('PROVIDER_URL is not a valid URL!', m); process.exit(1) }
