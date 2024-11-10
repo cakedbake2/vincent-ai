@@ -162,12 +162,10 @@ client.on('messageCreate', async (msg) => {
 
   const reply = { content: '', files: [], embeds: [] }
 
-console.log(messages)
-
   try {
     const response = await provider.chat.completions.create({
       model: process.env.CHAT_MODEL,
-      messages: messages,
+      messages,
       max_tokens: process.env.MAX_TOKENS,
       temperature: process.env.TEMPERATURE
     })
