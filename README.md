@@ -48,6 +48,7 @@ node index.js
 - Note: You need to enable Developer Mode in your Discord client to be able to copy the IDs:
 1. Go into User Settings by clicking the cog next to your profile.
 2. Go into App Settings > Advanced and enable Developer Mode.
+- If a file named `Weezer - Buddy Holly.mp3` is present in the same directory as the bot, it will be sent as a reply to messages from blacklisted contexts.
 
 ## Plans
 - Add tool usage, Memory
