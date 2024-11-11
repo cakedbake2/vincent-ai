@@ -19,7 +19,7 @@ npm install
 node index.js
 ```
 
-## Environment variables
+# Environment variables
 - `DISCORD_TOKEN`: your [Discord bot](https://discord.com/developers/applications/) token.
 - `PROVIDER_URL`: the URL of your OpenAI-API-compatible provider. Leave undefined to default to https://api.openai.com/v1/.
 - `API_KEY`: the API key of your provider.
@@ -44,8 +44,8 @@ node index.js
 # [cakedbake](https://github.com/cakedbake)'s recommended settings:
 - Use [DeepInfra](https://deepinfra.com/) as your provider.
 - Use `Qwen/Qwen2.5-72B-Instruct` as your model. [It even beats Llama 3.1 405B](https://artificialanalysis.ai/?models_selected=o1%2Co1-mini%2Cgpt-4o-2024-08-06%2Cgpt-4o-mini%2Cllama-3-1-instruct-405b%2Cllama-3-2-instruct-90b-vision%2Cllama-3-1-instruct-70b%2Cllama-3-1-instruct-8b%2Cgemini-1-5-pro%2Cgemini-1-5-flash%2Cclaude-35-sonnet%2Cclaude-3-5-haiku%2Cmistral-large-2%2Cjamba-1-5-large%2Cqwen2-5-72b-instruct), a model 5.625x bigger, while being 5.114x cheaper.
-- Set `MAX_TOKENS` to 8000.
-- Set `TEMPERATURE` to 0.0.
+- Set `MAX_TOKENS` to `8000`.
+- Set `TEMPERATURE` to `0.0`.
 - Add `694548530144083978` (an incredibly unpleasant individual) to your `blacklist.json`.
 
 # Blacklisting
@@ -62,6 +62,15 @@ node index.js
 1. Go into User Settings by clicking the cog next to your profile.
 2. Go into App Settings > Advanced and enable Developer Mode.
 - If a file named `Weezer - Buddy Holly.mp3` is present in the same directory as the bot, it will be uploaded as a reply to messages from blacklisted contexts.
+
+# Known issue
+```
+(node:_____) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+```
+Solutions:
+1. Use an LTS version of Node.js.
+2. Bypass N(ode)V(ersion)M(anager) and run Node.js directly (if you have it installed): `/usr/bin/node index.js`
 
 # Plans
 - Add tool usage, Memory

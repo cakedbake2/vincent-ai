@@ -15,26 +15,55 @@ try {
 
 const x = () => {} // to be used where error handling is not needed
 
-const m = 'Please set it in your .env file or as an environment variable.'
+const m = ' Please set a valid value in your .env file or as an environment variable.'
 
-if (!process.env.DISCORD_TOKEN) { console.error('DISCORD_TOKEN is not set!', m); process.exit(1) }
+if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!' + m) }
 
-if (!validator.isURL(process.env.PROVIDER_URL)) { console.warn('PROVIDER_URL is not a valid URL! Defaulting to OpenAI...'); process.env.PROVIDER_URL = "" }
+if (!validator.isURL(process.env.PROVIDER_URL || "")) { console.warn('PROVIDER_URL is not a valid URL! Defaulting to OpenAI...'); process.env.PROVIDER_URL = '' }
 // empty baseURL makes the library default to OpenAI
 
-if (!process.env.API_KEY) { console.error('API_KEY is not set!', m); process.exit(1) }
+if (!process.env.API_KEY) { throw new Error('API_KEY is not set!' + m) }
 
-if (!process.env.CHAT_MODEL) { console.error('CHAT_MODEL is not set!', m); process.exit(1) }
+if (!process.env.CHAT_MODEL) { throw new Error('CHAT_MODEL is not set!' + m) }
 
 process.env.MAX_TOKENS = Number(process.env.MAX_TOKENS)
-if (!process.env.MAX_TOKENS) { console.warn('MAX_TOKENS is not set, defaulting to 4096.', m); process.env.MAX_TOKENS = 4096 }
+process.env.MAX_TOKENS = Math.floor(process.env.MAX_TOKENS)
+if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid integer, defaulting to 4096.'); process.env.MAX_TOKENS = 4096 }
 
 process.env.TEMPERATURE = Number(process.env.TEMPERATURE)
-if (isNaN(process.env.TEMPERATURE)) { console.error('TEMPERATURE is not set, defaulting to 0.', m); process.env.TEMPERATURE = 0 }
+if (isNaN(process.env.TEMPERATURE)) { console.warn('TEMPERATURE is not a valid number, defaulting to 0.'); process.env.TEMPERATURE = 0 }
 
 const provider = new SamAltman({
   apiKey: process.env.API_KEY,
   baseURL: process.env.PROVIDER_URL
+})
+
+// no
+await provider.models.list().then((models) => {
+  models = models.data.map(model => model.id)
+
+  if (!models.includes(process.env.CHAT_MODEL)) {
+    console.error(process.env.CHAT_MODEL, 'is not a valid CHAT_MODEL!', m)
+    process.exit(1)
+  }
+
+  /*
+  if (!models.includes(process.env.VISION_MODEL)) {
+    console.warn(process.env.VISION_MODEL, 'is not a valid VISION_MODEL, vision will be disabled.')
+    process.env.VISION_MODEL = false
+  }
+
+  if (!models.includes(process.env.STT_MODEL)) {
+    console.warn(process.env.STT_MODEL, 'is not a valid STT_MODEL, STT will be disabled.')
+    process.env.STT_MODEL = false
+  }
+
+  // now this is ambitious
+  if (!models.includes(process.env.TTS_MODEL)) {
+    console.warn(process.env.TTS_MODEL, 'is not a valid TTS_MODEL, TTS will be disabled.')
+    process.env.TTS_MODEL = false
+  }
+  */
 })
 
 const client = new discord.Client({
@@ -93,7 +122,7 @@ client.on('messageCreate', async (msg) => {
 - You are in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
 - UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
 - Use informal language with all-lowercase and only 1-2 sentences.
-- Avoid "UwU" or "OwO", using ":3" instead.
+- Avoid "UwU" or "OwO" as they are deprecated, using ":3" instead.
 - Engage in role-playing actions only when requested.
 - Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
 - Avoid using backticks when pinging users or mentioning channels.
