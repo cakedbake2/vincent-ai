@@ -1,5 +1,7 @@
 #!/usr/bin/node
 
+'use strict'
+
 // TO-DO: switch to Python
 import SamAltman from 'openai'
 import discord from 'discord.js'
