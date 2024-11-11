@@ -19,7 +19,7 @@ const m = ' Please set a valid value in your .env file or as an environment vari
 
 if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!' + m) }
 
-if (!validator.isURL(process.env.PROVIDER_URL || "")) { console.warn('PROVIDER_URL is not a valid URL! Defaulting to OpenAI...'); process.env.PROVIDER_URL = '' }
+if (!validator.isURL(process.env.PROVIDER_URL || '')) { console.warn('PROVIDER_URL is not a valid URL! Defaulting to OpenAI...'); process.env.PROVIDER_URL = '' }
 // empty baseURL makes the library default to OpenAI
 
 if (!process.env.API_KEY) { throw new Error('API_KEY is not set!' + m) }
