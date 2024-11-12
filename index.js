@@ -91,6 +91,24 @@ function isBlacklisted (id) {
   }
 }
 
+function encodeSpecials(content, guild) {
+  client.users.cache.forEach((user) => { content = content.replaceAll('<@' + user.id + '>', '<@' + user.tag + '>') }) // replace <@12345678> with <@username>
+  client.users.cache.forEach((user) => { content = content.replaceAll('<@!' + user.id + '>', '<@' + user.tag + '>') }) // replace <@!12345678> with <@username>
+  client.channels.cache.forEach((channel) => { content = content.replaceAll('<#' + channel.id + '>', '<#' + channel.name + '>') }) // replace <#12345678> with <#channel>
+  if (guild) {
+    guild.roles.cache.forEach((role) => { content = content.replaceAll('<@&' + role.id + '>', '<@&' + role.name + '>') }) // replace <@&12345678> with <@&role>
+  }
+}
+
+function decodeSpecials(content, guild) {
+  client.users.cache.forEach((user) => { content = content.replaceAll('<@' + user.tag + '>', '<@' + user.id + '>') }) // replace <@username> with <@12345678>
+  client.users.cache.forEach((user) => { content = content.replaceAll('<@!' + user.tag + '>', '<@!' + user.id + '>') }) // replace <@!username> with <@!12345678>
+  client.channels.cache.forEach((channel) => { content = content.replaceAll('<#' + channel.name + '>', '<#' + channel.id + '>') }) // replace <#channel> with <#12345678>
+  if (guild) {
+    guild.roles.cache.forEach((role) => { content = content.replaceAll('<@&' + role.name + '>', '<@&' + role.id + '>') }) // replace <@&role> with <@&12345678>
+  }
+}
+
 client.on('messageCreate', async (msg) => {
   if (msg.author.id === client.user.id || msg.author.bot || !msg.mentions.users.has(client.user.id)) return
 
@@ -142,7 +160,7 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
     message = message[1]
 
     if (message.author.id === client.user.id) {
-      messages.push({ role: 'assistant', content: message.content })
+      messages.push({ role: 'assistant', content: encodeSpecials(message.content) })
     } else {
       let content = ''
 
@@ -159,10 +177,7 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
       if (message.type === 19) content += ` (replying to <@${message.reference.messageId || 'unknown'}>)`
       content += `:\n${message.content}`
 
-      client.users.cache.forEach((user) => { content = content.replaceAll('<@' + user.id + '>', '<@' + user.tag + '>') }) // replace <@12345678> with <@username>
-      client.users.cache.forEach((user) => { content = content.replaceAll('<@!' + user.id + '>', '<@' + user.tag + '>') }) // replace <@!12345678> with <@username>
-      client.channels.cache.forEach((channel) => { content = content.replaceAll('<#' + channel.id + '>', '<#' + channel.name + '>') }) // replace <#12345678> with <#channel>
-      message.guild.roles.cache.forEach((role) => { content = content.replaceAll('<@&' + role.id + '>', '<@&' + role.name + '>') }) // replace <@&12345678> with <@&role>
+      content = encodeSpecials(content, message.guild);
 
       if (message.attachments.size > 0) {
         content += '\n\n'
@@ -240,12 +255,7 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
 
   if (reply.content === '') { return }
 
-  // what a mess!
-  // TO-DO: export to function
-  client.users.cache.forEach((user) => { reply.content = reply.content.replaceAll('<@' + user.tag + '>', '<@' + user.id + '>') }) // replace <@username> with <@12345678>
-  client.users.cache.forEach((user) => { reply.content = reply.content.replaceAll('<@!' + user.tag + '>', '<@!' + user.id + '>') }) // replace <@!username> with <@!12345678>
-  client.channels.cache.forEach((channel) => { reply.content = reply.content.replaceAll('<#' + channel.name + '>', '<#' + channel.id + '>') }) // replace <#channel> with <#12345678>
-  msg.guild.roles.cache.forEach((role) => { reply.content = reply.content.replaceAll('<@&' + role.name + '>', '<@&' + role.id + '>') }) // replace <@&role> with <@&12345678>
+  reply.content = decodeSpecials(reply.content, msg.guild);
 
   if (reply.content.length > 2000) {
     reply.files.push(new discord.AttachmentBuilder(Buffer.from(reply.content), { name: 'message.txt' }))
