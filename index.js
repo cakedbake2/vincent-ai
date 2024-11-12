@@ -171,7 +171,6 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
           attachment = attachment[1]
 
           if (attachment.contentType.startsWith('image/') && process.env.VISION_MODEL) {
-            console.log(attachmentCache)
             if (attachmentCache[attachment.url]) {
               attachment.description = attachmentCache[attachment.url]
             } else {
