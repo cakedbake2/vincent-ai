@@ -27,6 +27,7 @@ node index.js
 - `MAX_TOKENS`: maximum amount of tokens the `CHAT_MODEL` can generate. Leave undefined to default to 4096.
 - `TEMPERATURE`: the temperature to use for the `CHAT_MODEL`. Leave undefined to default to 0°C.
 - `VISION_MODEL`: the model to use to provide image descriptions for the `CHAT_MODEL`. Leave undefined to default to disabled.
+- `BLACKLIST_DETERRENT`: path to a file to upload in response to blacklisted contexts. Leave undefined to just ignore blacklisted contexts.
 
 # Compatible providers
 - [DeepInfra](https://deepinfra.com/): https://api.deepinfra.com/v1/openai/ (tested)
@@ -71,7 +72,7 @@ node index.js
 - Note: You need to enable Developer Mode in your Discord client to be able to copy the IDs:
 1. Go into User Settings by clicking the cog next to your profile.
 2. Go into App Settings > Advanced and enable Developer Mode.
-- If a file named `Weezer - Buddy Holly.mp3` is present in the same directory as the bot, it will be uploaded as a reply to messages from blacklisted contexts.
+- Refer to section [Environment variables] to learn more.
 
 # Known issue
 ```

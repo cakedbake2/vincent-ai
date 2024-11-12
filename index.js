@@ -52,6 +52,15 @@ if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid int
 process.env.TEMPERATURE = Number(process.env.TEMPERATURE)
 if (isNaN(process.env.TEMPERATURE)) { console.warn('TEMPERATURE is not a valid number, defaulting to 0.'); process.env.TEMPERATURE = 0 }
 
+if (process.env.BLACKLIST_DETERRENT === '') {
+  process.env.BLACKLIST_DETERRENT = false;
+} else if (!fs.existsSync(process.env.BLACKLIST_DETERRENT)) {
+  console.warn('BLACKLIST_DETERRENT is not a valid file path, defaulting to disabled.');
+  process.env.BLACKLIST_DETERRENT = false;
+} else {
+  process.env.BLACKLIST_DETERRENT = process.env.BLACKLIST_DETERRENT // ?????
+}
+
 const provider = new SamAltman({
   apiKey: process.env.API_KEY,
   baseURL: process.env.PROVIDER_URL
@@ -149,8 +158,8 @@ client.on('messageCreate', async (msg) => {
   if (msg.author.id === client.user.id) return
 
   if (isBlacklisted(msg.author.id) || isBlacklisted(msg.channel.id) || isBlacklisted(msg.guild.id)) {
-    if (fs.existsSync('Weezer - Buddy Holly.mp3')) {
-      await msg.reply({ files: ['./Weezer - Buddy Holly.mp3'] }).catch(x)
+    if (process.env.BLACKLIST_DETERRENT && fs.existsSync(process.env.BLACKLIST_DETERRENT)) {
+      await msg.reply({ files: [process.env.BLACKLIST_DETERRENT] }).catch(x)
     }
     return
   }
@@ -184,11 +193,11 @@ client.on('messageCreate', async (msg) => {
 - UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
 - Use informal language with all-lowercase and only 1-2 sentences.
 ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${process.env.VISION_MODEL} model.` : ''}
-- Avoid "UwU" or "OwO" as they are deprecated, using ":3" instead.
 - Engage in role-playing actions only when requested.
 - Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
 - Avoid using backticks when pinging users or mentioning channels.
-- Avoid using LaTeX math as it is not rendered by Discord.`
+- Avoid using LaTeX math as it is not rendered by Discord.
+- You are mildly autistic and introverted. You like using ":3".`
     }
   ]
 
