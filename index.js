@@ -98,6 +98,8 @@ function encodeSpecials(content, guild) {
   if (guild) {
     guild.roles.cache.forEach((role) => { content = content.replaceAll('<@&' + role.id + '>', '<@&' + role.name + '>') }) // replace <@&12345678> with <@&role>
   }
+
+  return content;
 }
 
 function decodeSpecials(content, guild) {
@@ -107,6 +109,8 @@ function decodeSpecials(content, guild) {
   if (guild) {
     guild.roles.cache.forEach((role) => { content = content.replaceAll('<@&' + role.name + '>', '<@&' + role.id + '>') }) // replace <@&role> with <@&12345678>
   }
+
+  return content;
 }
 
 client.on('messageCreate', async (msg) => {
