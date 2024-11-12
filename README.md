@@ -26,6 +26,7 @@ node index.js
 - `CHAT_MODEL`: the model to use for chat.
 - `MAX_TOKENS`: maximum amount of tokens the `CHAT_MODEL` can generate. Leave undefined to default to 4096.
 - `TEMPERATURE`: the temperature to use for the `CHAT_MODEL`. Leave undefined to default to 0°C.
+- `VISION_MODEL`: the model to use to provide image descriptions for the `CHAT_MODEL`. Leave undefined to default to disabled.
 
 # Compatible providers
 - [DeepInfra](https://deepinfra.com/): https://api.deepinfra.com/v1/openai/ (tested)
@@ -46,7 +47,16 @@ node index.js
 - Use `Qwen/Qwen2.5-72B-Instruct` as your model. [It even beats Llama 3.1 405B](https://artificialanalysis.ai/?models_selected=o1%2Co1-mini%2Cgpt-4o-2024-08-06%2Cgpt-4o-mini%2Cllama-3-1-instruct-405b%2Cllama-3-2-instruct-90b-vision%2Cllama-3-1-instruct-70b%2Cllama-3-1-instruct-8b%2Cgemini-1-5-pro%2Cgemini-1-5-flash%2Cclaude-35-sonnet%2Cclaude-3-5-haiku%2Cmistral-large-2%2Cjamba-1-5-large%2Cqwen2-5-72b-instruct), a model 5.625x bigger, while being 5.114x cheaper.
 - Set `MAX_TOKENS` to `8000`.
 - Set `TEMPERATURE` to `0.0`.
+- Set `VISION_MODEL` to `meta-llama/Llama-3.2-90B-Vision-Instruct`. Llama 3.2 Vision is garbage in general, but 90B is less garbage than 11B.
 - Add `694548530144083978` (an incredibly unpleasant individual) to your `blacklist.json`.
+
+# Vision
+- Vision uses your chosen `VISION_MODEL` with a very simple prompt: `Describe this image in 250 words. Transcribe text if any is present.`
+- Now you might be wondering, why limit the detail of the image through a description?
+1. It allows using a much smarter chat model than the vision model.
+2. It allows caching, which saves money.
+3. In the case of using Llama 3.2 Vision, it only supports one. singular. image. at a time.
+- Should a sufficiently good multimodal model be released, I will rework the bot to support it.
 
 # Blacklisting
 - You can blacklist a user, a channel, or a guild by adding its ID to the `blacklist.json` file, like this:

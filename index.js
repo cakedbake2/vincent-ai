@@ -19,6 +19,9 @@ const x = () => {} // to be used where error handling is not needed
 
 const m = ' Please set a valid value in your .env file or as an environment variable.'
 
+// eslint-disable-next-line prefer-const
+let attachmentCache = {}
+
 if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!' + m) }
 
 if (!validator.isURL(process.env.PROVIDER_URL || '')) { console.warn('PROVIDER_URL is not a valid URL! Defaulting to OpenAI...'); process.env.PROVIDER_URL = '' }
@@ -49,12 +52,12 @@ await provider.models.list().then((models) => {
     process.exit(1)
   }
 
-  /*
   if (!models.includes(process.env.VISION_MODEL)) {
     console.warn(process.env.VISION_MODEL, 'is not a valid VISION_MODEL, vision will be disabled.')
     process.env.VISION_MODEL = false
   }
 
+  /*
   if (!models.includes(process.env.STT_MODEL)) {
     console.warn(process.env.STT_MODEL, 'is not a valid STT_MODEL, STT will be disabled.')
     process.env.STT_MODEL = false
@@ -124,6 +127,7 @@ client.on('messageCreate', async (msg) => {
 - You are in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
 - UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
 - Use informal language with all-lowercase and only 1-2 sentences.
+${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${process.env.VISION_MODEL} model.` : ''}
 - Avoid "UwU" or "OwO" as they are deprecated, using ":3" instead.
 - Engage in role-playing actions only when requested.
 - Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
@@ -165,6 +169,42 @@ client.on('messageCreate', async (msg) => {
 
         for (let attachment of message.attachments) {
           attachment = attachment[1]
+
+          if (attachment.contentType.startsWith('image/') && process.env.VISION_MODEL) {
+            console.log(attachmentCache)
+            if (attachmentCache[attachment.url]) {
+              attachment.description = attachmentCache[attachment.url]
+            } else {
+              try {
+                let response = await provider.chat.completions.create({
+                  model: process.env.VISION_MODEL,
+                  messages: [{
+                    role: 'user',
+                    content: [
+                      {
+                        type: 'text',
+                        text: 'Describe this image in 250 words. Transcribe text if any is present.'
+                      },
+                      {
+                        type: 'image_url',
+                        image_url: {
+                          url: attachment.url
+                        }
+                      }
+                    ]
+                  }],
+                  max_tokens: 1024,
+                  temperature: 0
+                })
+
+                response = response.choices[0].message.content
+                attachment.description = response
+                attachmentCache[attachment.url] = response
+              } catch (error) {
+                attachment.description = error.message
+              }
+            }
+          }
         }
 
         content += message.attachments.size + ' attachment(s): ' + JSON.stringify(Array.from(message.attachments.values()))
