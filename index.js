@@ -78,6 +78,24 @@ const client = new discord.Client({
   ]
 })
 
+// function to use to gracefully shutdown the bot
+const shutdown = async (i) => {
+  console.log('Terminating:', i)
+
+  await client.user.setPresence({
+    status: 'invisible',
+    activities: []
+  })
+
+  await client.destroy()
+  process.exit()
+}
+
+process.on('SIGINT', shutdown)
+process.on('SIGTERM', shutdown)
+process.on('uncaughtException', shutdown)
+process.on('unhandledRejection', shutdown)
+
 function isBlacklisted (id) {
   if (!fs.existsSync('blacklist.json')) { return false }
 
@@ -91,7 +109,7 @@ function isBlacklisted (id) {
   }
 }
 
-function encodeSpecials(content, guild) {
+function encodeSpecials (content, guild) {
   client.users.cache.forEach((user) => { content = content.replaceAll('<@' + user.id + '>', '<@' + user.tag + '>') }) // replace <@12345678> with <@username>
   client.users.cache.forEach((user) => { content = content.replaceAll('<@!' + user.id + '>', '<@' + user.tag + '>') }) // replace <@!12345678> with <@username>
   client.channels.cache.forEach((channel) => { content = content.replaceAll('<#' + channel.id + '>', '<#' + channel.name + '>') }) // replace <#12345678> with <#channel>
@@ -99,10 +117,10 @@ function encodeSpecials(content, guild) {
     guild.roles.cache.forEach((role) => { content = content.replaceAll('<@&' + role.id + '>', '<@&' + role.name + '>') }) // replace <@&12345678> with <@&role>
   }
 
-  return content;
+  return content
 }
 
-function decodeSpecials(content, guild) {
+function decodeSpecials (content, guild) {
   client.users.cache.forEach((user) => { content = content.replaceAll('<@' + user.tag + '>', '<@' + user.id + '>') }) // replace <@username> with <@12345678>
   client.users.cache.forEach((user) => { content = content.replaceAll('<@!' + user.tag + '>', '<@!' + user.id + '>') }) // replace <@!username> with <@!12345678>
   client.channels.cache.forEach((channel) => { content = content.replaceAll('<#' + channel.name + '>', '<#' + channel.id + '>') }) // replace <#channel> with <#12345678>
@@ -110,7 +128,7 @@ function decodeSpecials(content, guild) {
     guild.roles.cache.forEach((role) => { content = content.replaceAll('<@&' + role.name + '>', '<@&' + role.id + '>') }) // replace <@&role> with <@&12345678>
   }
 
-  return content;
+  return content
 }
 
 client.on('messageCreate', async (msg) => {
@@ -181,7 +199,7 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
       if (message.type === 19) content += ` (replying to <@${message.reference.messageId || 'unknown'}>)`
       content += `:\n${message.content}`
 
-      content = encodeSpecials(content, message.guild);
+      content = encodeSpecials(content, message.guild)
 
       if (message.attachments.size > 0) {
         content += '\n\n'
@@ -259,7 +277,7 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
 
   if (reply.content === '') { return }
 
-  reply.content = decodeSpecials(reply.content, msg.guild);
+  reply.content = decodeSpecials(reply.content, msg.guild)
 
   if (reply.content.length > 2000) {
     reply.files.push(new discord.AttachmentBuilder(Buffer.from(reply.content), { name: 'message.txt' }))
