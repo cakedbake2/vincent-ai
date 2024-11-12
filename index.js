@@ -53,11 +53,12 @@ process.env.TEMPERATURE = Number(process.env.TEMPERATURE)
 if (isNaN(process.env.TEMPERATURE)) { console.warn('TEMPERATURE is not a valid number, defaulting to 0.'); process.env.TEMPERATURE = 0 }
 
 if (process.env.BLACKLIST_DETERRENT === '') {
-  process.env.BLACKLIST_DETERRENT = false;
+  process.env.BLACKLIST_DETERRENT = false
 } else if (!fs.existsSync(process.env.BLACKLIST_DETERRENT)) {
-  console.warn('BLACKLIST_DETERRENT is not a valid file path, defaulting to disabled.');
-  process.env.BLACKLIST_DETERRENT = false;
+  console.warn('BLACKLIST_DETERRENT is not a valid file path, defaulting to disabled.')
+  process.env.BLACKLIST_DETERRENT = false
 } else {
+  // eslint-disable-next-line no-self-assign
   process.env.BLACKLIST_DETERRENT = process.env.BLACKLIST_DETERRENT // ?????
 }
 
