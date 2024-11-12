@@ -146,7 +146,7 @@ function decodeSpecials (content, guild) {
 }
 
 client.on('messageCreate', async (msg) => {
-  if (msg.author.id === client.user.id || msg.author.bot || !msg.mentions.users.has(client.user.id)) return
+  if (msg.author.id === client.user.id || msg.author.bot) return
 
   if (isBlacklisted(msg.author.id) || isBlacklisted(msg.channel.id) || isBlacklisted(msg.guild.id)) {
     if (fs.existsSync('Weezer - Buddy Holly.mp3')) {
@@ -154,6 +154,8 @@ client.on('messageCreate', async (msg) => {
     }
     return
   }
+
+  if (!msg.mentions.users.has(client.user.id)) return
 
   try {
     await msg.channel.sendTyping()
