@@ -85,7 +85,7 @@ Solutions:
 # Plans
 - Add tool usage, Memory
 - Custom system prompts
-- Vision, speech-to-text
+- Speech-to-text
 - If I'm really bored, the bot could be made to respond with TTS to voice messages.
 - Web searching (with Google)
 - DM support may come in the future, disabled by default (you know who you are), but could be enabled manually.

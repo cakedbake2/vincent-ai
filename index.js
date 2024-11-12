@@ -22,6 +22,20 @@ const m = ' Please set a valid value in your .env file or as an environment vari
 // eslint-disable-next-line prefer-const
 let attachmentCache = {}
 
+const attachmentCachePath = 'attachment_cache.json'
+
+if (fs.existsSync(attachmentCachePath)) {
+  try {
+    attachmentCache = JSON.parse(fs.readFileSync(attachmentCachePath).toString())
+  } catch (error) {
+    console.warn(attachmentCachePath, error)
+  }
+}
+
+function saveAttachmentCache () {
+  fs.writeFileSync(attachmentCachePath, JSON.stringify(attachmentCache))
+}
+
 if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!' + m) }
 
 if (!validator.isURL(process.env.PROVIDER_URL || '')) { console.warn('PROVIDER_URL is not a valid URL! Defaulting to OpenAI...'); process.env.PROVIDER_URL = '' }
@@ -236,8 +250,9 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
                 response = response.choices[0].message.content
                 attachment.description = response
                 attachmentCache[attachment.url] = response
+                saveAttachmentCache()
               } catch (error) {
-                attachment.description = error.message
+                if (!attachment.description) { attachment.description = error.message }
               }
             }
           }
