@@ -3,3 +3,6 @@ node_modules
 package-lock.json
 attachment_cache.json
 blacklist.json
+.env.deepinfra
+.env.groq
+.env.mistral

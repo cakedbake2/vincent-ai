@@ -290,8 +290,8 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
     const response = await provider.chat.completions.create({
       model: process.env.CHAT_MODEL,
       messages,
-      max_tokens: process.env.MAX_TOKENS,
-      temperature: process.env.TEMPERATURE
+      max_tokens: Number(process.env.MAX_TOKENS),
+      temperature: Number(process.env.TEMPERATURE)
     })
 
     reply.content = response.choices[0].message.content
