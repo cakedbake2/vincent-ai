@@ -1,4 +1,5 @@
-# Customizable Discord AI chatbot (you can set your own AI provider)
+# Discord Clyde-inspired AI chatbot
+# SEO: customizable provider, adjustable settings
 
 ## How to run
 ### Prerequisites: Node.js version 18 or higher.
