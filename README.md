@@ -34,6 +34,7 @@ node index.js
 - [DeepInfra](https://deepinfra.com/): https://api.deepinfra.com/v1/openai/ (tested)
 - [Mistral](https://mistral.ai/): https://api.deepinfra.com/v1/openai/ (tested)
 - Note: Mistral models are incapable of typing in all-lowercase for some bizzare reason.
+- [Groq](https://groq.com/): https://api.groq.com/openai/v1/ (tested)
 - [OpenAI](https://openai.com/): https://api.openai.com/v1/ (ewww)
 
 # Temperature
