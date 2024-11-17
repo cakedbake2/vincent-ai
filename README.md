@@ -89,6 +89,7 @@ Solutions:
 - Add tool usage, Memory
 - Custom system prompts
 - Speech-to-text
-- If I'm really bored, the bot could be made to respond with TTS to voice messages.
+- Sentience
+- Respond with TTS to voice messages
 - Web searching (with Google)
-- DM support may come in the future, disabled by default (you know who you are), but could be enabled manually.
+- DM support may come in the future, disabled by default (you know who you are), but could be enabled manually

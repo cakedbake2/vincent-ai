@@ -41,7 +41,7 @@ if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!' + 
 if (!validator.isURL(process.env.PROVIDER_URL || '')) { console.warn('PROVIDER_URL is not a valid URL! Defaulting to OpenAI...'); process.env.PROVIDER_URL = '' }
 // empty baseURL makes the library default to OpenAI
 
-if (!process.env.API_KEY) { throw new Error('API_KEY is not set!' + m) }
+if (!process.env.API_KEY) { console.warn('API_KEY is not set! API requests WILL fail unless you are using Ollama.') }
 
 if (!process.env.CHAT_MODEL) { throw new Error('CHAT_MODEL is not set!' + m) }
 
@@ -289,7 +289,7 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
   try {
     const response = await provider.chat.completions.create({
       model: process.env.CHAT_MODEL,
-      messages,
+      messages: messages, // eslint-disable-line object-shorthand
       max_tokens: Number(process.env.MAX_TOKENS),
       temperature: Number(process.env.TEMPERATURE)
     })
