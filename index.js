@@ -3,7 +3,7 @@
 'use strict'
 
 // TO-DO: switch to Python
-import SamAltman from 'openai'
+import OpenAI from 'openai'
 import discord from 'discord.js'
 import fs from 'node:fs'
 import dotenv from 'dotenv'
@@ -22,20 +22,6 @@ const m = ' Please set a valid value in your .env file or as an environment vari
 // eslint-disable-next-line prefer-const
 let attachmentCache = {}
 
-const attachmentCachePath = 'attachment_cache.json'
-
-if (fs.existsSync(attachmentCachePath)) {
-  try {
-    attachmentCache = JSON.parse(fs.readFileSync(attachmentCachePath).toString())
-  } catch (error) {
-    console.warn(attachmentCachePath, error)
-  }
-}
-
-function saveAttachmentCache () {
-  fs.writeFileSync(attachmentCachePath, JSON.stringify(attachmentCache))
-}
-
 if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!' + m) }
 
 if (!validator.isURL(process.env.PROVIDER_URL || '')) { console.warn('PROVIDER_URL is not a valid URL! Defaulting to OpenAI...'); process.env.PROVIDER_URL = '' }
@@ -52,17 +38,7 @@ if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid int
 process.env.TEMPERATURE = Number(process.env.TEMPERATURE)
 if (isNaN(process.env.TEMPERATURE)) { console.warn('TEMPERATURE is not a valid number, defaulting to 0.'); process.env.TEMPERATURE = 0 }
 
-if (process.env.BLACKLIST_DETERRENT === '') {
-  process.env.BLACKLIST_DETERRENT = false
-} else if (!fs.existsSync(process.env.BLACKLIST_DETERRENT)) {
-  console.warn('BLACKLIST_DETERRENT is not a valid file path, defaulting to disabled.')
-  process.env.BLACKLIST_DETERRENT = false
-} else {
-  // eslint-disable-next-line no-self-assign
-  process.env.BLACKLIST_DETERRENT = process.env.BLACKLIST_DETERRENT // ?????
-}
-
-const provider = new SamAltman({
+const provider = new OpenAI({
   apiKey: process.env.API_KEY,
   baseURL: process.env.PROVIDER_URL
 })
@@ -80,19 +56,6 @@ await provider.models.list().then((models) => {
     console.warn(process.env.VISION_MODEL, 'is not a valid VISION_MODEL, vision will be disabled.')
     process.env.VISION_MODEL = false
   }
-
-  /*
-  if (!models.includes(process.env.STT_MODEL)) {
-    console.warn(process.env.STT_MODEL, 'is not a valid STT_MODEL, STT will be disabled.')
-    process.env.STT_MODEL = false
-  }
-
-  // now this is ambitious
-  if (!models.includes(process.env.TTS_MODEL)) {
-    console.warn(process.env.TTS_MODEL, 'is not a valid TTS_MODEL, TTS will be disabled.')
-    process.env.TTS_MODEL = false
-  }
-  */
 })
 
 const client = new discord.Client({
@@ -158,12 +121,7 @@ function decodeSpecials (content, guild) {
 client.on('messageCreate', async (msg) => {
   if (msg.author.id === client.user.id) return
 
-  if (isBlacklisted(msg.author.id) || isBlacklisted(msg.channel.id) || isBlacklisted(msg.guild.id)) {
-    if (process.env.BLACKLIST_DETERRENT && fs.existsSync(process.env.BLACKLIST_DETERRENT)) {
-      await msg.reply({ files: [process.env.BLACKLIST_DETERRENT] }).catch(x)
-    }
-    return
-  }
+  if (isBlacklisted(msg.author.id) || isBlacklisted(msg.channel.id) || isBlacklisted(msg.guild.id)) { return }
 
   if (!msg.mentions.users.has(client.user.id) || msg.author.bot) return
 
@@ -193,7 +151,7 @@ client.on('messageCreate', async (msg) => {
 - You are in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
 - UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
 - Use informal language with all-lowercase and only 1-2 sentences.
-${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${process.env.VISION_MODEL} model.` : ''}
+${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MODEL) ? `- You are provided image descriptions by the ${process.env.VISION_MODEL} model.` : ''}
 - Engage in role-playing actions only when requested.
 - Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
 - Avoid using backticks when pinging users or mentioning channels.
@@ -210,59 +168,44 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
     if (message.author.id === client.user.id) {
       messages.push({ role: 'assistant', content: encodeSpecials(message.content) })
     } else {
-      let content = ''
+      let content = [ { type: 'text', text: '' } ]
 
       if (message.type === 7) {
         messages.push({ role: 'user', content: `<@${message.author.id}> joined the server.` })
         continue
       }
 
-      content += new Date().toISOString() + '\n'
-      content += `<@${message.author.tag}>`
-      if (message.author.nickname) content += ` (${message.author.nickname})`
-      if (message.author.bot) content += ' (BOT)'
-      if (message.editedTimestamp) content += ' (edited)'
-      if (message.type === 19) content += ` (replying to <@${message.reference.messageId || 'unknown'}>)`
-      content += `:\n${message.content}`
-
-      content = encodeSpecials(content, message.guild)
+      content[0].text += new Date().toISOString() + '\n'
+      content[0].text += `<@${message.author.tag}>`
+      if (message.author.nickname) { content[0].text += ` (${message.author.nickname})` }
+      if (message.author.bot) { content[0].text += ' (BOT)' }
+      if (message.editedTimestamp) { content[0].text += ' (edited)' }
+      if (message.type === 19) { content[0].text += ` (replying to <@${message.reference.messageId || 'unknown'}>)` }
+      
+      content[0].text += ":\n" + encodeSpecials(message.content, message.guild)
 
       if (message.attachments.size > 0) {
-        content += '\n\n'
+        content[0].text += '\n\n'
 
         for (let attachment of message.attachments) {
           attachment = attachment[1]
 
+          // TO-DO: refactor to make future STT support less messy
           if (attachment.contentType.startsWith('image/') && process.env.VISION_MODEL) {
-            if (attachmentCache[attachment.url]) {
-              attachment.description = attachmentCache[attachment.url]
+            if (process.env.CHAT_MODEL === process.env.VISION_MODEL) {
+              content.push({ type: 'image_url', image_url: { url: attachment.url }});
             } else {
               try {
                 let response = await provider.chat.completions.create({
                   model: process.env.VISION_MODEL,
-                  messages: [{
-                    role: 'user',
-                    content: [
-                      {
-                        type: 'text',
-                        text: 'Describe this image in 250 words. Transcribe text if any is present.'
-                      },
-                      {
-                        type: 'image_url',
-                        image_url: {
-                          url: attachment.url
-                        }
-                      }
-                    ]
-                  }],
+                  messages: [ { role: 'user', content: [ { type: 'text', text: 'Describe this image in 250 words. Transcribe text if any is present.' }, { type: 'image_url', image_url: { url: attachment.url } } ] } ],
                   max_tokens: 1024,
                   temperature: 0
                 })
 
                 response = response.choices[0].message.content
                 attachment.description = response
-                attachmentCache[attachment.url] = response
-                saveAttachmentCache()
+                attachmentCache[attachment.url] = attachment.description;
               } catch (error) {
                 if (!attachment.description) { attachment.description = error.message }
               }
@@ -270,16 +213,19 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
           }
         }
 
-        content += message.attachments.size + ' attachment(s): ' + JSON.stringify(Array.from(message.attachments.values()))
+        content[0].text += message.attachments.size + ' attachment(s): ' + JSON.stringify(Array.from(message.attachments.values()))
+      }
+
+      if (content.length == 1) {
+        content = content[0].text
       }
 
       // 1970-01-01T00:00:00.000Z
       // <@abc> (BOT) (edited) (replying to <@xyz>):
-      // you are a fool. a gigantic FOOL.
+      // example message content here
       //
       // 123 attachment(s): [ ... ]
 
-      // TO-DO: reactions
       messages.push({ role: 'user', content })
     }
   }
@@ -289,7 +235,7 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
   try {
     const response = await provider.chat.completions.create({
       model: process.env.CHAT_MODEL,
-      messages: messages, // eslint-disable-line object-shorthand
+      messages: messages,
       max_tokens: Number(process.env.MAX_TOKENS),
       temperature: Number(process.env.TEMPERATURE)
     })
@@ -317,9 +263,9 @@ ${process.env.VISION_MODEL ? `- You are provided image descriptions by the ${pro
 client.login(process.env.DISCORD_TOKEN)
 
 client.on('ready', async () => {
-  console.log('ready on', client.user.tag)
+  console.log('ready on', client.user.tag);
+  
+  // client.application.edit("custom bot about me here");
 
-  // client.application.edit("who out here large languaging my models 😞");
-
-  // client.user.setActivity("free ballpoint hammer giveaway at 123 fazbear st", { "type": discord.ActivityType.Custom });
+  // client.user.setActivity("custom bot status here", { "type": discord.ActivityType.Custom });
 })

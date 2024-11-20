@@ -27,38 +27,38 @@ node index.js
 - `CHAT_MODEL`: the model to use for chat.
 - `MAX_TOKENS`: maximum amount of tokens the `CHAT_MODEL` can generate. Leave undefined to default to 4096.
 - `TEMPERATURE`: the temperature to use for the `CHAT_MODEL`. Leave undefined to default to 0°C.
-- `VISION_MODEL`: the model to use to provide image descriptions for the `CHAT_MODEL`. Leave undefined to default to disabled.
-- `BLACKLIST_DETERRENT`: path to a file to upload in response to blacklisted contexts. Leave undefined to just ignore blacklisted contexts.
+- `VISION_MODEL`: the model to use to provide image descriptions for the `CHAT_MODEL`. Leave undefined to default to disabled. See [Vision](#vision).
 
 # Compatible providers
 - [DeepInfra](https://deepinfra.com/): https://api.deepinfra.com/v1/openai/ (tested)
 - [Mistral](https://mistral.ai/): https://api.deepinfra.com/v1/openai/ (tested)
-- Note: Mistral models are incapable of typing in all-lowercase for some bizzare reason.
+- Note: For some reason, Mistral models can't type in all-lowercase.
 - [Groq](https://groq.com/): https://api.groq.com/openai/v1/ (tested)
-- [OpenAI](https://openai.com/): https://api.openai.com/v1/ (ewww)
+- [OpenAI](https://openai.com/): https://api.openai.com/v1/
 
 # Temperature
 - A temperature of 0°C will make the bot's responses deterministic and repetitive.
 - A temperature of 0.5°C will make the bot's responses more balanced between creativity and coherence.
-- A temperature of 0.7°C is recommended.
-- A temperature of 1°C will make the bot's responses more creative and less coherent.
-- A temperature of 1.5°C will make the bot drunk.
-- A temperature of 2°C or above will make the bot hallucinate.
+- A temperature of 0.7°C is recommended for most use cases.
+- A temperature of 1°C will make the bot's responses more creative.
+- A temperature of 1.5°C will make the bot borderline incoherent.
+- A temperature of 2°C or above will make the bot generate total nonsense.
 
 # [cakedbake](https://github.com/cakedbake)'s recommended settings:
-- Use [DeepInfra](https://deepinfra.com/) as your provider.
-- Use `Qwen/Qwen2.5-72B-Instruct` as your model. [It even beats Llama 3.1 405B](https://artificialanalysis.ai/?models_selected=o1%2Co1-mini%2Cgpt-4o-2024-08-06%2Cgpt-4o-mini%2Cllama-3-1-instruct-405b%2Cllama-3-2-instruct-90b-vision%2Cllama-3-1-instruct-70b%2Cllama-3-1-instruct-8b%2Cgemini-1-5-pro%2Cgemini-1-5-flash%2Cclaude-35-sonnet%2Cclaude-3-5-haiku%2Cmistral-large-2%2Cjamba-1-5-large%2Cqwen2-5-72b-instruct), a model 5.625x bigger, while being 5.114x cheaper (on DeepInfra).
+- Use [Mistral](https://mistral.ai/) as your provider.
+- Set `CHAT_MODEL` to `pixtral-large-latest`.
 - Set `MAX_TOKENS` to `8000`.
-- Set `TEMPERATURE` to `0.0`.
-- Set `VISION_MODEL` to `meta-llama/Llama-3.2-90B-Vision-Instruct`. Llama 3.2 Vision is garbage in general, but 90B is less garbage than 11B.
+- Set `TEMPERATURE` to `0.0`. (optional: see [Temperature](#temperature)).
+- Set `VISION_MODEL` to `pixtral-large-latest` to enable multimodality mode (see [Vision](#vision)).
 
 # Vision
+### If your `CHAT_MODEL` and `VISION_MODEL` are different:
 - Vision uses your chosen `VISION_MODEL` with a very simple prompt: `Describe this image in 250 words. Transcribe text if any is present.`
-- Now you might be wondering, why limit the detail of the image through a description?
-1. It allows using a much smarter chat model than the vision model.
-2. It allows caching, which saves money.
-3. In the case of using Llama 3.2 Vision, it only supports one. singular. image. at a time.
-- Should a sufficiently good multimodal model be released, I will rework the bot to support it.
+- It allows using a much smarter chat model than the vision model. It also allows caching, which saves money.
+### If your `CHAT_MODEL` and `VISION_MODEL` are the same:
+- The images will be passed directly to the `CHAT_MODEL`. Only use with models that are both multimodal, and can handle more than one image unless you can absolutely guarantee that the bot will not see more than one image at a time.
+- Llama 3.2 11B & 90B can only support one image per context, so are not good for this.
+
 
 # Blacklisting
 - You can blacklist a user, a channel, or a guild by adding its ID to the `blacklist.json` file, like this:
@@ -69,11 +69,10 @@ node index.js
 	...
 ]
 ```
-- The bot will completely ignore blacklisted entities.
+- The bot will completely ignore messages from blacklisted contexts.
 - Note: You need to enable Developer Mode in your Discord client to be able to copy the IDs:
 1. Go into User Settings by clicking the cog next to your profile.
 2. Go into App Settings > Advanced and enable Developer Mode.
-- Refer to section [Environment variables] to learn more.
 
 # Known issue
 ```
@@ -86,6 +85,7 @@ Solutions:
 
 # Plans
 - Add tool usage, Memory
+- Make the bot see reactions
 - Custom system prompts
 - Speech-to-text
 - Sentience
