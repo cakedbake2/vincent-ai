@@ -5,7 +5,7 @@
 // TO-DO: switch to Python
 import SamAltman from 'openai'
 import discord from 'discord.js'
-import fs from 'fs'
+import fs from 'node:fs'
 import dotenv from 'dotenv'
 import validator from 'validator'
 

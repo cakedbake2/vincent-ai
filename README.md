@@ -51,7 +51,6 @@ node index.js
 - Set `MAX_TOKENS` to `8000`.
 - Set `TEMPERATURE` to `0.0`.
 - Set `VISION_MODEL` to `meta-llama/Llama-3.2-90B-Vision-Instruct`. Llama 3.2 Vision is garbage in general, but 90B is less garbage than 11B.
-- Add `694548530144083978` (an incredibly unpleasant individual) to your `blacklist.json`.
 
 # Vision
 - Vision uses your chosen `VISION_MODEL` with a very simple prompt: `Describe this image in 250 words. Transcribe text if any is present.`
