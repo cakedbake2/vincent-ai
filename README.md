@@ -30,11 +30,10 @@ node index.js
 - `VISION_MODEL`: the model to use to provide image descriptions for the `CHAT_MODEL`. Leave undefined to default to disabled. See [Vision](#vision).
 
 # Compatible providers
-- [DeepInfra](https://deepinfra.com/): https://api.deepinfra.com/v1/openai/ (tested)
-- [Mistral](https://mistral.ai/): https://api.deepinfra.com/v1/openai/ (tested)
-- Note: For some reason, Mistral models can't type in all-lowercase.
-- [Groq](https://groq.com/): https://api.groq.com/openai/v1/ (tested)
-- [OpenAI](https://openai.com/): https://api.openai.com/v1/
+- [DeepInfra](https://deepinfra.com/): `https://api.deepinfra.com/v1/openai/` (tested)
+- [Mistral](https://mistral.ai/): `https://api.mistral.ai/v1/` (tested)
+- [Groq](https://groq.com/): `https://api.groq.com/openai/v1/` (tested)
+- [OpenAI](https://openai.com/): `https://api.openai.com/v1/`
 
 # Temperature
 - A temperature of 0°C will make the bot's responses deterministic and repetitive.
@@ -45,7 +44,7 @@ node index.js
 - A temperature of 2°C or above will make the bot generate total nonsense.
 
 # [cakedbake](https://github.com/cakedbake)'s recommended settings:
-- Use [Mistral](https://mistral.ai/) as your provider.
+- Use [Mistral](https://mistral.ai/) (`https://api.mistral.ai/v1/`) as your provider.
 - Set `CHAT_MODEL` to `pixtral-large-latest`.
 - Set `MAX_TOKENS` to `8000`.
 - Set `TEMPERATURE` to `0.0`. (optional: see [Temperature](#temperature)).
