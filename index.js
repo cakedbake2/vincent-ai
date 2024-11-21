@@ -83,17 +83,28 @@ process.on('SIGTERM', shutdown)
 process.on('uncaughtException', shutdown)
 process.on('unhandledRejection', shutdown)
 
-function isBlacklisted (id) {
-  if (!fs.existsSync('blacklist.json')) { return false }
+let blacklist = []
 
+if (fs.existsSync('blacklist.json')) {
   try {
-    return JSON.parse(fs.readFileSync('blacklist.json').toString()).includes(id)
-    // file deletion can cause a race condition here, so
+    blacklist = JSON.parse(fs.readFileSync('blacklist.json'))
   } catch (error) {
-    console.warn('A blacklist.json exists, but is not valid JSON!', error.message)
-
-    return false
+    console.warn('Error while parsing blacklist.json:', error.mesage)
   }
+}
+
+fs.watch('blacklist.json', (eventType, filename) => {
+  // TO-DO: figure out why this fires twice
+  try {
+    blacklist = JSON.parse(fs.readFileSync('blacklist.json'))
+    console.info('Blacklist updated from blacklist.json')
+  } catch (error) {
+    console.warn('Error while parsing blacklist.json:', error.mesage)
+  }
+})
+
+function isBlacklisted (id) {
+  return blacklist.includes(id)
 }
 
 function encodeSpecials (content, guild) {
@@ -166,7 +177,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
     if (message.author.id === client.user.id) {
       messages.push({ role: 'assistant', content: encodeSpecials(message.content) })
     } else {
-      let content = [ { type: 'text', text: '' } ]
+      let content = [{ type: 'text', text: '' }]
 
       if (message.type === 7) {
         messages.push({ role: 'user', content: `<@${message.author.id}> joined the server.` })
@@ -179,8 +190,8 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
       if (message.author.bot) { content[0].text += ' (BOT)' }
       if (message.editedTimestamp) { content[0].text += ' (edited)' }
       if (message.type === 19) { content[0].text += ` (replying to <@${message.reference.messageId || 'unknown'}>)` }
-      
-      content[0].text += ":\n" + encodeSpecials(message.content, message.guild)
+
+      content[0].text += ':\n' + encodeSpecials(message.content, message.guild)
 
       if (message.attachments.size > 0) {
         content[0].text += '\n\n'
@@ -191,19 +202,19 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
           // TO-DO: refactor to make future STT support less messy
           if (attachment.contentType.startsWith('image/') && process.env.VISION_MODEL) {
             if (process.env.CHAT_MODEL === process.env.VISION_MODEL) {
-              content.push({ type: 'image_url', image_url: { url: attachment.url }});
+              content.push({ type: 'image_url', image_url: { url: attachment.url } })
             } else {
               try {
                 let response = await provider.chat.completions.create({
                   model: process.env.VISION_MODEL,
-                  messages: [ { role: 'user', content: [ { type: 'text', text: 'Describe this image in 250 words. Transcribe text if any is present.' }, { type: 'image_url', image_url: { url: attachment.url } } ] } ],
+                  messages: [{ role: 'user', content: [{ type: 'text', text: 'Describe this image in 250 words. Transcribe text if any is present.' }, { type: 'image_url', image_url: { url: attachment.url } }] }],
                   max_tokens: 1024,
                   temperature: 0
                 })
 
                 response = response.choices[0].message.content
                 attachment.description = response
-                attachmentCache[attachment.url] = attachment.description;
+                attachmentCache[attachment.url] = attachment.description
               } catch (error) {
                 if (!attachment.description) { attachment.description = error.message }
               }
@@ -214,7 +225,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
         content[0].text += message.attachments.size + ' attachment(s): ' + JSON.stringify(Array.from(message.attachments.values()))
       }
 
-      if (content.length == 1) {
+      if (content.length === 1) {
         content = content[0].text
       }
 
@@ -233,7 +244,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
   try {
     const response = await provider.chat.completions.create({
       model: process.env.CHAT_MODEL,
-      messages: messages,
+      messages,
       max_tokens: Number(process.env.MAX_TOKENS),
       temperature: Number(process.env.TEMPERATURE)
     })
@@ -261,8 +272,8 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
 client.login(process.env.DISCORD_TOKEN)
 
 client.on('ready', async () => {
-  console.log('ready on', client.user.tag);
-  
+  console.log('ready on', client.user.tag)
+
   // client.application.edit("custom bot about me here");
 
   // client.user.setActivity("custom bot status here", { "type": discord.ActivityType.Custom });

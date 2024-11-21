@@ -72,6 +72,13 @@ node index.js
 - Note: You need to enable Developer Mode in your Discord client to be able to copy the IDs:
 1. Go into User Settings by clicking the cog next to your profile.
 2. Go into App Settings > Advanced and enable Developer Mode.
+- Due to the way the blacklist is checked, junk can be specified that is not a valid ID. This can help keep track of blacklisted IDs, like this:
+```json
+[
+	"123456789012345678", "#spam",
+	"123456789012345678", "@bad-person"
+]
+```
 
 # Known issue
 ```
