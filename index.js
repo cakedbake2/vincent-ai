@@ -2,7 +2,6 @@
 
 'use strict'
 
-// TO-DO: switch to Python
 import OpenAI from 'openai'
 import discord from 'discord.js'
 import fs from 'node:fs'
