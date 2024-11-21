@@ -29,12 +29,6 @@ node index.js
 - `TEMPERATURE`: the temperature to use for the `CHAT_MODEL`. Leave undefined to default to 0°C.
 - `VISION_MODEL`: the model to use to provide image descriptions for the `CHAT_MODEL`. Leave undefined to default to disabled. See [Vision](#vision).
 
-# Compatible providers
-- [DeepInfra](https://deepinfra.com/): `https://api.deepinfra.com/v1/openai/` (tested)
-- [Mistral](https://mistral.ai/): `https://api.mistral.ai/v1/` (tested)
-- [Groq](https://groq.com/): `https://api.groq.com/openai/v1/` (tested)
-- [OpenAI](https://openai.com/): `https://api.openai.com/v1/`
-
 # Temperature
 - A temperature of 0°C will make the bot's responses deterministic and repetitive.
 - A temperature of 0.5°C will make the bot's responses more balanced between creativity and coherence.
@@ -44,7 +38,7 @@ node index.js
 - A temperature of 2°C or above will make the bot generate total nonsense.
 
 # [cakedbake](https://github.com/cakedbake)'s recommended settings:
-- Use [Mistral](https://mistral.ai/) (`https://api.mistral.ai/v1/`) as your provider.
+- Set `PROVIDER_URL` to `https://api.mistral.ai/v1/` ([Mistral](https://mistral.ai/)).
 - Set `CHAT_MODEL` to `pixtral-large-latest`.
 - Set `MAX_TOKENS` to `8000`.
 - Set `TEMPERATURE` to `0.0`. (optional: see [Temperature](#temperature)).
@@ -77,7 +71,8 @@ node index.js
 ```json
 [
 	"123456789012345678", "#spam",
-	"123456789012345678", "@bad-person"
+	"123456789012345678", "@bad-person",
+	...
 ]
 ```
 
@@ -91,6 +86,7 @@ Solutions:
 2. Bypass N(ode)V(ersion)M(anager) and run Node.js directly (if you have it installed): `/usr/bin/node index.js`
 
 # Plans
+- Ollama support
 - Add tool usage, Memory
 - Make the bot see reactions
 - Custom system prompts
@@ -98,4 +94,4 @@ Solutions:
 - Sentience
 - Respond with TTS to voice messages
 - Web searching (with Google)
-- DM support may come in the future, disabled by default (you know who you are), but could be enabled manually
+- DM support may come in the future, disabled by default, but enableable manually

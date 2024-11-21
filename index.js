@@ -23,16 +23,15 @@ let attachmentCache = {}
 
 if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!' + m) }
 
-if (!validator.isURL(process.env.PROVIDER_URL || '')) { console.warn('PROVIDER_URL is not a valid URL! Defaulting to OpenAI...'); process.env.PROVIDER_URL = '' }
-// empty baseURL makes the library default to OpenAI
+if (!validator.isURL(process.env.PROVIDER_URL || '')) { throw new Error('PROVIDER_URL is not a valid URL!' + m) }
 
-if (!process.env.API_KEY) { console.warn('API_KEY is not set! API requests WILL fail unless you are using Ollama.') }
+if (!process.env.API_KEY) { throw new Error('API_KEY is not set!' + m) }
 
 if (!process.env.CHAT_MODEL) { throw new Error('CHAT_MODEL is not set!' + m) }
 
 process.env.MAX_TOKENS = Number(process.env.MAX_TOKENS)
 process.env.MAX_TOKENS = Math.floor(process.env.MAX_TOKENS)
-if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid integer, defaulting to 4096.'); process.env.MAX_TOKENS = 4096 }
+if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid integer, defaulting to 1024.'); process.env.MAX_TOKENS = 1024 }
 
 process.env.TEMPERATURE = Number(process.env.TEMPERATURE)
 if (isNaN(process.env.TEMPERATURE)) { console.warn('TEMPERATURE is not a valid number, defaulting to 0.'); process.env.TEMPERATURE = 0 }
@@ -42,7 +41,6 @@ const provider = new OpenAI({
   baseURL: process.env.PROVIDER_URL
 })
 
-// no
 await provider.models.list().then((models) => {
   models = models.data.map(model => model.id)
 
@@ -106,7 +104,7 @@ function isBlacklisted (id) {
   return blacklist.includes(id)
 }
 
-function encodeSpecials (content, guild) {
+function makeSpecialsLlmFriendly (content, guild) {
   client.users.cache.forEach((user) => { content = content.replaceAll('<@' + user.id + '>', '<@' + user.tag + '>') }) // replace <@12345678> with <@username>
   client.users.cache.forEach((user) => { content = content.replaceAll('<@!' + user.id + '>', '<@' + user.tag + '>') }) // replace <@!12345678> with <@username>
   client.channels.cache.forEach((channel) => { content = content.replaceAll('<#' + channel.id + '>', '<#' + channel.name + '>') }) // replace <#12345678> with <#channel>
@@ -117,7 +115,7 @@ function encodeSpecials (content, guild) {
   return content
 }
 
-function decodeSpecials (content, guild) {
+function makeSpecialsLlmUnfriendly (content, guild) {
   client.users.cache.forEach((user) => { content = content.replaceAll('<@' + user.tag + '>', '<@' + user.id + '>') }) // replace <@username> with <@12345678>
   client.users.cache.forEach((user) => { content = content.replaceAll('<@!' + user.tag + '>', '<@!' + user.id + '>') }) // replace <@!username> with <@!12345678>
   client.channels.cache.forEach((channel) => { content = content.replaceAll('<#' + channel.name + '>', '<#' + channel.id + '>') }) // replace <#channel> with <#12345678>
@@ -174,7 +172,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
     message = message[1]
 
     if (message.author.id === client.user.id) {
-      messages.push({ role: 'assistant', content: encodeSpecials(message.content) })
+      messages.push({ role: 'assistant', content: makeSpecialsLlmFriendly(message.content) })
     } else {
       let content = [{ type: 'text', text: '' }]
 
@@ -190,7 +188,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
       if (message.editedTimestamp) { content[0].text += ' (edited)' }
       if (message.type === 19) { content[0].text += ` (replying to <@${message.reference.messageId || 'unknown'}>)` }
 
-      content[0].text += ':\n' + encodeSpecials(message.content, message.guild)
+      content[0].text += ':\n' + makeSpecialsLlmFriendly(message.content, message.guild)
 
       if (message.attachments.size > 0) {
         content[0].text += '\n\n'
@@ -258,7 +256,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
 
   if (reply.content === '') { return }
 
-  reply.content = decodeSpecials(reply.content, msg.guild)
+  reply.content = makeSpecialsLlmUnfriendly(reply.content, msg.guild)
 
   if (reply.content.length > 2000) {
     reply.files.push(new discord.AttachmentBuilder(Buffer.from(reply.content), { name: 'message.txt' }))
