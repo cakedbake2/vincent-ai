@@ -190,6 +190,25 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
 
       content[0].text += ':\n' + makeSpecialsLlmFriendly(message.content, message.guild)
 
+      if (message.reactions.cache.size > 0) {
+        content[0].text += '\n\n'
+
+        const reactions = {}
+
+        for (const [emojiId, reaction] of message.reactions.cache.entries()) {
+          // Fetch users who reacted with this emoji
+          const users = await reaction.users.fetch()
+
+          // Convert the users collection to an array of user IDs or usernames
+          const userList = users.map(user => user.username)
+
+          // Store the users in the reactionsData object
+          reactions[reaction.emoji.toString()] = userList
+        }
+
+        content[0].text += 'Reactions: ' + JSON.stringify(reactions)
+      }
+
       if (message.attachments.size > 0) {
         content[0].text += '\n\n'
 

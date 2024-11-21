@@ -88,7 +88,6 @@ Solutions:
 # Plans
 - Ollama support
 - Add tool usage, Memory
-- Make the bot see reactions
 - Custom system prompts
 - Speech-to-text
 - Sentience
