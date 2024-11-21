@@ -154,8 +154,6 @@ client.on('messageCreate', async (msg) => {
 ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MODEL) ? `- You are provided image descriptions by the ${process.env.VISION_MODEL} model.` : ''}
 - Engage in role-playing actions only when requested.
 - Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
-- Avoid using backticks when pinging users or mentioning channels.
-- Avoid using LaTeX math as it is not rendered by Discord.
 - Avoid using "UwU" or "OwO" as they are deprecated, instead using ":3".`
     }
   ]
