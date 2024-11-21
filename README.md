@@ -55,7 +55,8 @@ node index.js
 - Vision uses your chosen `VISION_MODEL` with a very simple prompt: `Describe this image in 250 words. Transcribe text if any is present.`
 - It allows using a much smarter chat model than the vision model. It also allows caching, which saves money.
 ### If your `CHAT_MODEL` and `VISION_MODEL` are the same:
-- The images will be passed directly to the `CHAT_MODEL`. Only use with models that are both multimodal, and can handle more than one image unless you can absolutely guarantee that the bot will not see more than one image at a time.
+- The images will be passed directly to the `CHAT_MODEL`. This is much faster as another model does not have to interfere and generate a description.
+- Only use with models that are both multimodal, and can handle more than one image unless you can absolutely guarantee that the bot will not see more than one image at a time.
 - Llama 3.2 11B & 90B can only support one image per context, so are not good for this.
 
 
