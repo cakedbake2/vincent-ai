@@ -255,6 +255,8 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
     }
   }
 
+  console.dir(messages, { depth: Infinity });
+
   const reply = { content: '', files: [], embeds: [] }
 
   try {
@@ -267,8 +269,9 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
 
     reply.content = response.choices[0].message.content
   } catch (error) {
+    console.log(error)
     reply.content = '⚠️ ' + error.message
-    reply.files.push(new discord.AttachmentBuilder(Buffer.from(JSON.stringify(error.response?.data || error.stack, null, 4)), { name: 'error.json' }))
+    reply.files.push(new discord.AttachmentBuilder(Buffer.from(JSON.stringify(error.response?.data, null, 4) || error.stack), { name: 'error.json' }))
   }
 
   clearInterval(typer)
