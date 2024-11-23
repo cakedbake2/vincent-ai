@@ -66,10 +66,12 @@ const client = new discord.Client({
 const shutdown = async (i) => {
   console.log('Terminating:', i)
 
-  await client.user.setPresence({
-    status: 'invisible',
-    activities: []
-  })
+  try {
+    await client.user.setPresence({
+      status: 'invisible',
+      activities: []
+    })
+  } catch {}
 
   await client.destroy()
   process.exit()
