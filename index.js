@@ -195,7 +195,8 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
 
         const reactions = {}
 
-        for (const [emojiId, reaction] of message.reactions.cache.entries()) {
+        // eslint-disable-next-line no-unused-vars
+        for (const [_, reaction] of message.reactions.cache.entries()) {
           // Fetch users who reacted with this emoji
           const users = await reaction.users.fetch()
 
@@ -255,7 +256,9 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
     }
   }
 
-  console.dir(messages, { depth: Infinity });
+  if (process.env.PROVIDER_URL.startsWith('https://api.mistral.ai/v1') && process.env.CHAT_MODEL === process.env.VISION_MODEL) {
+    // do something about the API not taking more than 8 images
+  }
 
   const reply = { content: '', files: [], embeds: [] }
 
@@ -269,7 +272,6 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
 
     reply.content = response.choices[0].message.content
   } catch (error) {
-    console.log(error)
     reply.content = '⚠️ ' + error.message
     reply.files.push(new discord.AttachmentBuilder(Buffer.from(JSON.stringify(error.response?.data, null, 4) || error.stack), { name: 'error.json' }))
   }
