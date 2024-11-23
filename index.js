@@ -90,17 +90,17 @@ if (fs.existsSync('blacklist.json')) {
   } catch (error) {
     console.warn('Error while parsing blacklist.json:', error.mesage)
   }
-}
 
-fs.watch('blacklist.json', (eventType, filename) => {
-  // TO-DO: figure out why this fires twice
-  try {
-    blacklist = JSON.parse(fs.readFileSync('blacklist.json'))
-    console.info('Blacklist updated from blacklist.json')
-  } catch (error) {
-    console.warn('Error while parsing blacklist.json:', error.mesage)
-  }
-})
+  fs.watch('blacklist.json', (eventType, filename) => {
+    // TO-DO: figure out why this fires twice
+    try {
+      blacklist = JSON.parse(fs.readFileSync('blacklist.json'))
+      console.info('Blacklist updated from blacklist.json')
+    } catch (error) {
+      console.warn('Error while parsing blacklist.json:', error.mesage)
+    }
+  })
+}
 
 function isBlacklisted (id) {
   return blacklist.includes(id)
