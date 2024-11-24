@@ -153,7 +153,7 @@ client.on('messageCreate', async (msg) => {
     return
   }
 
-  const messages = [
+  let messages = [
     {
       role: 'system',
       content:
@@ -259,7 +259,22 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
   }
 
   if (process.env.PROVIDER_URL.startsWith('https://api.mistral.ai/v1') && process.env.CHAT_MODEL === process.env.VISION_MODEL) {
-    // do something about the API not taking more than 8 images
+    let imagesSoFar = 0;
+
+    // TO-DO: rework this AI-generated code
+    for (let i = messages.length - 1; i >= 0; i--) { // start from the end of the array
+      if (typeof messages[i].content === 'string') { continue }
+
+      for (let j = messages[i].content.length - 1; j >= 0; j--) { // start from the end of the inner array
+        if (messages[i].content[j].type === 'image_url') {
+          imagesSoFar++;
+
+          if (imagesSoFar > 8) {
+            messages[i].content.splice(j, 1);
+          }
+        }
+      }
+    }
   }
 
   const reply = { content: '', files: [], embeds: [] }
