@@ -219,7 +219,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
           attachment = attachment[1]
 
           // TO-DO: refactor to make future STT support less messy
-          if (attachment.contentType.startsWith('image/') && process.env.VISION_MODEL) {
+          if (attachment.contentType?.startsWith('image/') && process.env.VISION_MODEL) {
             if (process.env.CHAT_MODEL === process.env.VISION_MODEL) {
               content.push({ type: 'image_url', image_url: { url: attachment.url } })
             } else {
