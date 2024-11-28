@@ -153,7 +153,7 @@ client.on('messageCreate', async (msg) => {
     return
   }
 
-  let messages = [
+  const messages = [
     {
       role: 'system',
       content:
@@ -174,7 +174,11 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
     message = message[1]
 
     if (message.author.id === client.user.id) {
-      messages.push({ role: 'assistant', content: makeSpecialsLlmFriendly(message.content) })
+      if (message.type === 7) {
+        messages.push({ role: 'assistant', content: `<@${message.author.id}> joined the server.` })
+      } else {
+        messages.push({ role: 'assistant', content: makeSpecialsLlmFriendly(message.content) })
+      }
     } else {
       let content = [{ type: 'text', text: '' }]
 
@@ -259,7 +263,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
   }
 
   if (process.env.PROVIDER_URL.startsWith('https://api.mistral.ai/v1') && process.env.CHAT_MODEL === process.env.VISION_MODEL) {
-    let imagesSoFar = 0;
+    let imagesSoFar = 0
 
     // TO-DO: rework this AI-generated code
     for (let i = messages.length - 1; i >= 0; i--) { // start from the end of the array
@@ -267,10 +271,10 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
 
       for (let j = messages[i].content.length - 1; j >= 0; j--) { // start from the end of the inner array
         if (messages[i].content[j].type === 'image_url') {
-          imagesSoFar++;
+          imagesSoFar++
 
           if (imagesSoFar > 8) {
-            messages[i].content.splice(j, 1);
+            messages[i].content.splice(j, 1)
           }
         }
       }
