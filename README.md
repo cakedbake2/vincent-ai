@@ -42,7 +42,7 @@ node index.js
 - Set `MAX_TOKENS` to `8000`.
 - Set `TEMPERATURE` to `0.0`. (optional: see [Temperature](#temperature)).
 - Set `VISION_MODEL` to `pixtral-large-latest` to enable multimodality mode (see [Vision](#vision)).
-- Warning: The Mistral API only allows providing a maximum of 8 images to Pixtral Large. If more are provided, it returns a `422` error.
+- Warning: The Mistral API only allows providing a maximum of 8 images to Pixtral Large. If more are provided, it returns a `422` error. The bot accounts for this by only keeping the latest 8 images in the context.
 
 # Vision
 ### If your `CHAT_MODEL` and `VISION_MODEL` are different:
