@@ -6,3 +6,4 @@ blacklist.json
 .env.deepinfra
 .env.groq
 .env.mistral
+errors

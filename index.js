@@ -295,6 +295,11 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
   } catch (error) {
     reply.content = '⚠️ ' + error.message
     reply.files.push(new discord.AttachmentBuilder(Buffer.from(JSON.stringify(error.response?.data, null, 4) || error.stack), { name: 'error.json' }))
+
+    // check if ./errors/ exists
+    if (fs.existsSync('./errors/')) {
+      fs.writeFileSync('./errors/' + new Date().getTime() + '.json', JSON.stringify([messages, error.message, error.stack]))
+    }
   }
 
   clearInterval(typer)

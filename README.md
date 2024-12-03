@@ -53,6 +53,9 @@ node index.js
 - Only use with models that are both multimodal, and can handle more than one image unless you can absolutely guarantee that the bot will not see more than one image at a time.
 - Llama 3.2 11B & 90B can only support one image per context, so are not good for this.
 
+# Error logging
+- Create a directory named `errors` for the bot to store errors within it.
+- If it encounters an error during inference, it will log the error to `errors` as `./errors/X.json` where X is the UNIX timestamp at time of error with milliseconds.
 
 # Blacklisting
 - You can blacklist a user, a channel, or a guild by adding its ID to the `blacklist.json` file, like this:
