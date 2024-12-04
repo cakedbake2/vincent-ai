@@ -6,7 +6,6 @@ import OpenAI from 'openai'
 import discord from 'discord.js'
 import fs from 'node:fs'
 import dotenv from 'dotenv'
-import validator from 'validator'
 
 try {
   dotenv.config()
@@ -21,7 +20,7 @@ let attachmentCache = {}
 
 if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!' + m) }
 
-if (!validator.isURL(process.env.PROVIDER_URL || '')) { throw new Error('PROVIDER_URL is not a valid URL!' + m) }
+if (!process.env.PROVIDER_URL) { throw new Error('PROVIDER_URL is not a valid URL!' + m) }
 
 if (!process.env.API_KEY) { throw new Error('API_KEY is not set!' + m) }
 
