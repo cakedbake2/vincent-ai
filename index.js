@@ -58,7 +58,6 @@ await provider.models.list().then((models) => {
 const client = new discord.Client({
   intents: [
     1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536, 1048576, 2097152, 16777216, 33554432
-    // TO-DO: only require needed intents
   ]
 })
 
@@ -91,7 +90,7 @@ if (fs.existsSync('blacklist.json')) {
     console.warn('Error while parsing blacklist.json:', error.mesage)
   }
 
-  fs.watch('blacklist.json', (eventType, filename) => {
+  fs.watch('blacklist.json', () => {
     // TO-DO: figure out why this fires twice
     try {
       blacklist = JSON.parse(fs.readFileSync('blacklist.json'))
@@ -313,7 +312,13 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
     reply.content = reply.content.slice(0, 2000)
   }
 
-  await msg.reply(reply).catch(async () => { await msg.channel.send(reply).catch(x) })
+  try {
+    await msg.reply(reply)
+  } catch {
+    try {
+      await msg.channel.send(reply)
+    } catch { /* ¯\_(ツ)_/¯ */ }
+  }
 })
 
 client.login(process.env.DISCORD_TOKEN)
