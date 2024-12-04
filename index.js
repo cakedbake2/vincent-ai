@@ -14,8 +14,6 @@ try {
   // assume environment variables are set in the environment
 }
 
-const x = () => {} // to be used where error handling is not needed
-
 const m = ' Please set a valid value in your .env file or as an environment variable.'
 
 // eslint-disable-next-line prefer-const
