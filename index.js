@@ -13,18 +13,18 @@ try {
   // assume environment variables are set in the environment
 }
 
-const m = ' Please set a valid value in your .env file or as an environment variable.'
+const m = 'Please set a valid value in your .env file or as an environment variable.'
 
 // eslint-disable-next-line prefer-const
 let attachmentCache = {}
 
-if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!' + m) }
+if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set! ' + m) }
 
-if (!process.env.PROVIDER_URL) { throw new Error('PROVIDER_URL is not a valid URL!' + m) }
+if (!process.env.PROVIDER_URL) { throw new Error('PROVIDER_URL is not a valid URL! ' + m) }
 
-if (!process.env.API_KEY) { throw new Error('API_KEY is not set!' + m) }
+if (!process.env.API_KEY) { throw new Error('API_KEY is not set! ' + m) }
 
-if (!process.env.CHAT_MODEL) { throw new Error('CHAT_MODEL is not set!' + m) }
+if (!process.env.CHAT_MODEL) { throw new Error('CHAT_MODEL is not set! ' + m) }
 
 process.env.MAX_TOKENS = Number(process.env.MAX_TOKENS)
 process.env.MAX_TOKENS = Math.floor(process.env.MAX_TOKENS)
