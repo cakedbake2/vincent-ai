@@ -24,8 +24,6 @@ if (!process.env.PROVIDER_URL) { throw new Error('PROVIDER_URL is not a valid UR
 
 if (!process.env.API_KEY) { throw new Error('API_KEY is not set! ' + m) }
 
-if (!process.env.CHAT_MODEL) { throw new Error('CHAT_MODEL is not set! ' + m) }
-
 process.env.MAX_TOKENS = Number(process.env.MAX_TOKENS)
 process.env.MAX_TOKENS = Math.floor(process.env.MAX_TOKENS)
 if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid integer, defaulting to 1024.'); process.env.MAX_TOKENS = 1024 }
