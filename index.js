@@ -46,7 +46,7 @@ await provider.models.list().then((models) => {
 
   if (!models.includes(process.env.VISION_MODEL)) {
     console.warn(process.env.VISION_MODEL, 'is not a valid VISION_MODEL, vision will be disabled.')
-    process.env.VISION_MODEL = false
+    process.env.VISION_MODEL = ''
   }
 })
 
@@ -186,7 +186,11 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
       if (message.author.nickname) { content[0].text += ` (${message.author.nickname})` }
       if (message.author.bot) { content[0].text += ' (BOT)' }
       if (message.editedTimestamp) { content[0].text += ' (edited)' }
-      if (message.type === 19) { content[0].text += ` (replying to <@${message.reference.messageId || 'unknown'}>)` }
+      if (message.type === 19) {
+        const reference = await message.fetchReference()
+        // TO-DO: ...something.
+        content[0].text += ` (replying to <@${client.users.cache.get(reference.author.id).tag || 'unknown'}>)`
+      }
 
       content[0].text += ':\n' + makeSpecialsLlmFriendly(message.content, message.guild)
 
@@ -275,6 +279,8 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
     }
   }
 
+  // fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
+
   const reply = { content: '', files: [], embeds: [] }
 
   try {
@@ -292,7 +298,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
 
     // check if ./errors/ exists
     if (fs.existsSync('./errors/')) {
-      fs.writeFileSync('./errors/' + new Date().getTime() + '.json', JSON.stringify([messages, error.message, error.stack]))
+      fs.writeFileSync('./errors/' + new Date().getTime() + '.json', JSON.stringify([messages, error.message, error.stack])) // once in heat death of universe race condition
     }
   }
 
