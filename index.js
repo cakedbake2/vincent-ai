@@ -171,7 +171,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
       if (message.type === 7) {
         messages.push({ role: 'assistant', content: `<@${message.author.id}> joined the server.` })
       } else {
-        messages.push({ role: 'assistant', content: makeSpecialsLlmFriendly(message.content) })
+        messages.push({ role: 'assistant', content: makeSpecialsLlmFriendly(message.content) || "[NO CONTENT]" })
       }
     } else {
       let content = [{ type: 'text', text: '' }]
