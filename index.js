@@ -187,9 +187,11 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
       if (message.author.bot) { content[0].text += ' (BOT)' }
       if (message.editedTimestamp) { content[0].text += ' (edited)' }
       if (message.type === 19) {
-        const reference = await message.fetchReference()
-        // TO-DO: ...something.
-        content[0].text += ` (replying to <@${client.users.cache.get(reference.author.id).tag || 'unknown'}>)`
+        try {
+          content[0].text += ` (replying to <@${client.users.cache.get((await message.fetchReference()).author.id).tag || 'unknown'}>)`
+        } catch {
+          content[0].text += ' (replying to deleted message)'
+        }
       }
 
       content[0].text += ':\n' + makeSpecialsLlmFriendly(message.content, message.guild)
