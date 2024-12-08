@@ -6,6 +6,7 @@ import OpenAI from 'openai'
 import discord from 'discord.js'
 import fs from 'node:fs'
 import dotenv from 'dotenv'
+import { evaluate } from 'mathjs'
 
 try {
   dotenv.config()
@@ -122,6 +123,13 @@ function makeSpecialsLlmUnfriendly (content, guild) {
   return content
 }
 
+const tools = {
+  "math": {
+    "call": async (args) => { args = JSON.parse(args); return evaluate(args.expression) },
+    "data": { "type": "function", "function": { "name": "math", "description": "Useful for mathematical expressions.", "parameters": { "type": "object", "properties": { "expression": { "type": "string", "description": "The mathematical expression to evaluate." } }, "required": ["expression"] } } }
+  }
+}
+
 client.on('messageCreate', async (msg) => {
   if (msg.author.id === client.user.id) return
 
@@ -158,7 +166,8 @@ client.on('messageCreate', async (msg) => {
 ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MODEL) ? `- You are provided image descriptions by the ${process.env.VISION_MODEL} model.` : ''}
 - Engage in role-playing actions only when requested.
 - Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
-- Avoid using "UwU" or "OwO" as they are deprecated, instead using ":3".`
+- Avoid using "UwU" or "OwO" as they are deprecated, instead using ":3".
+- Function call results do not persist between messages and are not visible to the user. ALWAYS MAKE FUNCTION CALLS.`
     }
   ]
 
@@ -281,19 +290,51 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
     }
   }
 
-  // fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
-
   const reply = { content: '', files: [], embeds: [] }
 
   try {
-    const response = await provider.chat.completions.create({
-      model: process.env.CHAT_MODEL,
-      messages,
-      max_tokens: Number(process.env.MAX_TOKENS),
-      temperature: Number(process.env.TEMPERATURE)
-    })
+    while (true) {
+      fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
+      let response = await provider.chat.completions.create({
+        model: process.env.CHAT_MODEL,
+    		messages,
+        tools: Object.values(tools).map(tool => tool.data),
+        max_tokens: Number(process.env.MAX_TOKENS),
+        temperature: Number(process.env.TEMPERATURE)
+      })
 
-    reply.content = response.choices[0].message.content
+      response = response.choices[0].message
+
+      messages.push(response);
+
+      reply.content += response.content
+
+      if (response.tool_calls) {
+        for (const tool_call of response.tool_calls) {
+          const tool = tools[tool_call.function.name]
+
+          if (!tool) {
+            continue
+          }
+
+          let result;
+          try {
+            // eslint-disable-next-line no-var
+            result = await tool.call(tool_call.function.arguments)
+          } catch (error) {
+            result = error.message
+          }
+
+          messages.push({
+            role: 'tool',
+            tool_call_id: tool_call.id,
+            content: JSON.stringify(result)
+          })
+        }
+      } else {
+        break
+      }
+    }
   } catch (error) {
     reply.content = '⚠️ ' + error.message
     reply.files.push(new discord.AttachmentBuilder(Buffer.from(JSON.stringify(error.response?.data, null, 4) || error.stack), { name: 'error.json' }))
@@ -307,6 +348,8 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
   clearInterval(typer)
 
   if (reply.content === '') { return }
+
+  fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
 
   reply.content = makeSpecialsLlmUnfriendly(reply.content, msg.guild)
 
