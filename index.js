@@ -349,7 +349,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
 
   if (reply.content === '') { return }
 
-  fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
+  // fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
 
   reply.content = makeSpecialsLlmUnfriendly(reply.content, msg.guild)
 
