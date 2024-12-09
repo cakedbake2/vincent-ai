@@ -1,4 +1,4 @@
-# Discord Clyde-inspired AI chatbot
+# Discord Clyde-inspired Mistral-based AI chatbot
 
 ## How to run
 ### Prerequisites: Node.js version 18 or higher.
@@ -21,12 +21,10 @@ node index.js
 
 # Environment variables
 - `DISCORD_TOKEN`: your [Discord bot](https://discord.com/developers/applications/) token.
-- `PROVIDER_URL`: the URL of your OpenAI-API-compatible provider. Leave undefined to default to https://api.openai.com/v1/.
-- `API_KEY`: the API key of your provider.
-- `CHAT_MODEL`: the model to use for chat.
-- `MAX_TOKENS`: maximum amount of tokens the `CHAT_MODEL` can generate. Leave undefined to default to 4096.
-- `TEMPERATURE`: the temperature to use for the `CHAT_MODEL`. Leave undefined to default to 0°C.
-- `VISION_MODEL`: the model to use to provide image descriptions for the `CHAT_MODEL`. Leave undefined to default to disabled. See [Vision](#vision).
+- `API_KEY`: your [Mistral AI](https://mistral.ai/) API key.
+- `MODEL`: the model to use for chat. Vision will be enabled automagically if your model is multi-modal.
+- `MAX_TOKENS`: maximum amount of tokens the `MODEL` can generate.
+- `TEMPERATURE`: the temperature to use for the `MODEL`.
 
 # Temperature
 - A temperature of 0°C will make the bot's responses deterministic and repetitive.
@@ -37,21 +35,10 @@ node index.js
 - A temperature of 2°C or above will make the bot generate total nonsense.
 
 # [cakedbake](https://github.com/cakedbake)'s recommended settings:
-- Set `PROVIDER_URL` to `https://api.mistral.ai/v1/` ([Mistral](https://mistral.ai/)).
-- Set `CHAT_MODEL` to `pixtral-large-latest`.
+- Set `MODEL` to `pixtral-large-latest`.
+- Warning: The Mistral API only allows providing a maximum of 8 images to Pixtral Large. If more are provided, it returns a `422` error. The bot accounts for this by only keeping the latest 8 images in the context.
 - Set `MAX_TOKENS` to `8000`.
 - Set `TEMPERATURE` to `0.0`. (optional: see [Temperature](#temperature)).
-- Set `VISION_MODEL` to `pixtral-large-latest` to enable multimodality mode (see [Vision](#vision)).
-- Warning: The Mistral API only allows providing a maximum of 8 images to Pixtral Large. If more are provided, it returns a `422` error. The bot accounts for this by only keeping the latest 8 images in the context.
-
-# Vision
-### If your `CHAT_MODEL` and `VISION_MODEL` are different:
-- Vision uses your chosen `VISION_MODEL` with a very simple prompt: `Describe this image in 250 words. Transcribe text if any is present.`
-- It allows using a much smarter chat model than the vision model. It also allows caching, which saves money.
-### If your `CHAT_MODEL` and `VISION_MODEL` are the same:
-- The images will be passed directly to the `CHAT_MODEL`. This is much faster as another model does not have to interfere and generate a description.
-- Only use with models that are both multimodal, and can handle more than one image unless you can absolutely guarantee that the bot will not see more than one image at a time.
-- Llama 3.2 11B & 90B can only support one image per context, so are not good for this.
 
 # Error logging
 - Create a directory named `errors` for the bot to store errors within it.
@@ -89,8 +76,7 @@ Solutions:
 2. Bypass N(ode)V(ersion)M(anager) and run Node.js directly (if you have it installed): `/usr/bin/node index.js`
 
 # Plans
-- Ollama support
-- Add tool usage, Memory
+- Memory
 - Custom system prompts
 - Speech-to-text
 - Sentience

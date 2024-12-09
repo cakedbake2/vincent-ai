@@ -14,40 +14,34 @@ try {
   // assume environment variables are set in the environment
 }
 
-const m = 'Please set a valid value in your .env file or as an environment variable.'
+let functionCache = {}
 
-// eslint-disable-next-line prefer-const
-let attachmentCache = {}
+if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!') }
 
-if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set! ' + m) }
-
-if (!process.env.PROVIDER_URL) { throw new Error('PROVIDER_URL is not a valid URL! ' + m) }
-
-if (!process.env.API_KEY) { throw new Error('API_KEY is not set! ' + m) }
+if (!process.env.API_KEY) { throw new Error('API_KEY is not set!') }
 
 process.env.MAX_TOKENS = Number(process.env.MAX_TOKENS)
 process.env.MAX_TOKENS = Math.floor(process.env.MAX_TOKENS)
-if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid integer, defaulting to 1024.'); process.env.MAX_TOKENS = 1024 }
+if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid integer!'); process.env.MAX_TOKENS = "" }
 
 process.env.TEMPERATURE = Number(process.env.TEMPERATURE)
-if (isNaN(process.env.TEMPERATURE)) { console.warn('TEMPERATURE is not a valid number, defaulting to 0.'); process.env.TEMPERATURE = 0 }
+if (isNaN(process.env.TEMPERATURE)) { console.warn('TEMPERATURE is not a valid number!'); process.env.TEMPERATURE = "" }
 
 const provider = new OpenAI({
   apiKey: process.env.API_KEY,
-  baseURL: process.env.PROVIDER_URL
+  baseURL: "https://api.mistral.ai/v1"
 })
 
-await provider.models.list().then((models) => {
-  models = models.data.map(model => model.id)
+let modelIsMultimodal = false;
 
-  if (!models.includes(process.env.CHAT_MODEL)) {
-    console.error(process.env.CHAT_MODEL, 'is not a valid CHAT_MODEL!', m)
-    process.exit(1)
+await provider.models.list().then((models) => {
+  if (!models.data.map(model => model.id).includes(process.env.MODEL)) {
+    throw new Error(process.env.MODEL, 'is not a valid MODEL!')
   }
 
-  if (!models.includes(process.env.VISION_MODEL)) {
-    console.warn(process.env.VISION_MODEL, 'is not a valid VISION_MODEL, vision will be disabled.')
-    process.env.VISION_MODEL = ''
+  // check if the current model is .capabilities.vision
+  if (models.data.find(model => model.id === process.env.MODEL).capabilities.vision) {
+    modelIsMultimodal = true;
   }
 })
 
@@ -124,9 +118,9 @@ function makeSpecialsLlmUnfriendly (content, guild) {
 }
 
 const tools = {
-  "math": {
-    "call": async (args) => { args = JSON.parse(args); return evaluate(args.expression) },
-    "data": { "type": "function", "function": { "name": "math", "description": "Useful for mathematical expressions.", "parameters": { "type": "object", "properties": { "expression": { "type": "string", "description": "The mathematical expression to evaluate." } }, "required": ["expression"] } } }
+  math: {
+    call: async (args) => { args = JSON.parse(args); return evaluate(args.expression) },
+    data: { type: 'function', function: { name: 'math', description: 'Call to evaluate a mathematical expression.', parameters: { type: 'object', properties: { expression: { type: 'string', description: 'The mathematical expression to evaluate.' } }, required: ['expression'] } } }
   }
 }
 
@@ -159,15 +153,15 @@ client.on('messageCreate', async (msg) => {
     {
       role: 'system',
       content:
-`- You are an AI assistant, based on the "${process.env.CHAT_MODEL}" model, named ${client.user.tag}.
+`- You are an AI assistant, based on the "${process.env.MODEL}" model, named ${client.user.tag}.
 - You are in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
 - UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
 - Use informal language with all-lowercase and only 1-2 sentences.
-${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MODEL) ? `- You are provided image descriptions by the ${process.env.VISION_MODEL} model.` : ''}
+${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.MODEL) ? `- You are provided image descriptions by the ${process.env.VISION_MODEL} model.` : ''}
 - Engage in role-playing actions only when requested.
 - Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
 - Avoid using "UwU" or "OwO" as they are deprecated, instead using ":3".
-- Function call results do not persist between messages and are not visible to the user. ALWAYS MAKE FUNCTION CALLS.`
+- Function calls are not visible to the user. If you are not certain about whether to call a function, don't call it.`
     }
   ]
 
@@ -180,7 +174,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
       if (message.type === 7) {
         messages.push({ role: 'assistant', content: `<@${message.author.id}> joined the server.` })
       } else {
-        messages.push({ role: 'assistant', content: makeSpecialsLlmFriendly(message.content) || "[NO CONTENT]" })
+        messages.push({ role: 'assistant', content: makeSpecialsLlmFriendly(message.content) || '[NO CONTENT]' })
       }
     } else {
       let content = [{ type: 'text', text: '' }]
@@ -231,25 +225,9 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
         for (let attachment of message.attachments) {
           attachment = attachment[1]
 
-          // TO-DO: refactor to make future STT support less messy
-          if (attachment.contentType?.startsWith('image/') && process.env.VISION_MODEL) {
-            if (process.env.CHAT_MODEL === process.env.VISION_MODEL) {
+          if (attachment.contentType?.startsWith('image/') && modelIsMultimodal) {
+            if (process.env.MODEL === process.env.VISION_MODEL) {
               content.push({ type: 'image_url', image_url: { url: attachment.url } })
-            } else {
-              try {
-                let response = await provider.chat.completions.create({
-                  model: process.env.VISION_MODEL,
-                  messages: [{ role: 'user', content: [{ type: 'text', text: 'Describe this image in 250 words. Transcribe text if any is present.' }, { type: 'image_url', image_url: { url: attachment.url } }] }],
-                  max_tokens: 1024,
-                  temperature: 0
-                })
-
-                response = response.choices[0].message.content
-                attachment.description = response
-                attachmentCache[attachment.url] = attachment.description
-              } catch (error) {
-                if (!attachment.description) { attachment.description = error.message }
-              }
             }
           }
         }
@@ -271,7 +249,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
     }
   }
 
-  if (process.env.PROVIDER_URL.startsWith('https://api.mistral.ai/v1') && process.env.CHAT_MODEL === process.env.VISION_MODEL) {
+  if (true) {
     let imagesSoFar = 0
 
     // TO-DO: rework this AI-generated code
@@ -296,8 +274,8 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
     while (true) {
       fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
       let response = await provider.chat.completions.create({
-        model: process.env.CHAT_MODEL,
-    		messages,
+        model: process.env.MODEL,
+        messages,
         tools: Object.values(tools).map(tool => tool.data),
         max_tokens: Number(process.env.MAX_TOKENS),
         temperature: Number(process.env.TEMPERATURE)
@@ -305,29 +283,29 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.CHAT_MOD
 
       response = response.choices[0].message
 
-      messages.push(response);
+      messages.push(response)
 
       reply.content += response.content
 
       if (response.tool_calls) {
-        for (const tool_call of response.tool_calls) {
-          const tool = tools[tool_call.function.name]
+        for (const toolCall of response.tool_calls) {
+          const tool = tools[toolCall.function.name]
 
           if (!tool) {
             continue
           }
 
-          let result;
+          let result
           try {
             // eslint-disable-next-line no-var
-            result = await tool.call(tool_call.function.arguments)
+            result = await tool.call(toolCall.function.arguments)
           } catch (error) {
             result = error.message
           }
 
           messages.push({
             role: 'tool',
-            tool_call_id: tool_call.id,
+            tool_call_id: toolCall.id,
             content: JSON.stringify(result)
           })
         }
