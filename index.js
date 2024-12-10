@@ -117,6 +117,43 @@ function makeSpecialsLlmUnfriendly (content, guild) {
   return content
 }
 
+function regret(content) {
+  content = content.replaceAll('Regex', 'Regret')
+  content = content.replaceAll('rEgex', 'rEgret')
+  content = content.replaceAll('REgex', 'REgret')
+  content = content.replaceAll('reGex', 'reGret')
+  content = content.replaceAll('ReGex', 'ReGret')
+  content = content.replaceAll('rEGex', 'rEGret')
+  content = content.replaceAll('REGex', 'REGret')
+  content = content.replaceAll('regEx', 'regrEt')
+  content = content.replaceAll('RegEx', 'RegrEt')
+  content = content.replaceAll('rEgEx', 'rEgrEt')
+  content = content.replaceAll('REgEx', 'REgrEt')
+  content = content.replaceAll('reGEx', 'reGrEt')
+  content = content.replaceAll('regex', 'regret')
+  content = content.replaceAll('ReGEx', 'ReGrEt')
+  content = content.replaceAll('rEGEx', 'rEGrEt')
+  content = content.replaceAll('REGEx', 'REGrEt')
+  content = content.replaceAll('regeX', 'regreT')
+  content = content.replaceAll('RegeX', 'RegreT')
+  content = content.replaceAll('rEgeX', 'rEgreT')
+  content = content.replaceAll('REgeX', 'REgreT')
+  content = content.replaceAll('reGeX', 'reGreT')
+  content = content.replaceAll('ReGeX', 'ReGreT')
+  content = content.replaceAll('rEGeX', 'rEGreT')
+  content = content.replaceAll('REGeX', 'REGreT')
+  content = content.replaceAll('regEX', 'regrET')
+  content = content.replaceAll('RegEX', 'RegrET')
+  content = content.replaceAll('rEgEX', 'rEgrET')
+  content = content.replaceAll('REgEX', 'REgrET')
+  content = content.replaceAll('reGEX', 'reGrET')
+  content = content.replaceAll('ReGEX', 'ReGrET')
+  content = content.replaceAll('rEGEX', 'rEGrET')
+  content = content.replaceAll('REGEX', 'REGrET')
+
+  return content
+}
+
 const tools = {
   math: {
     call: async (args) => { args = JSON.parse(args); return evaluate(args.expression) },
@@ -197,7 +234,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.MODEL) ?
         }
       }
 
-      content[0].text += ':\n' + makeSpecialsLlmFriendly(message.content, message.guild)
+      content[0].text += ':\n' + makeSpecialsLlmFriendly(regret(message.content), message.guild)
 
       if (message.reactions.cache.size > 0) {
         content[0].text += '\n\n'
@@ -327,38 +364,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.MODEL) ?
 
   if (reply.content === '') { return }
 
-  reply.content = reply.content.replaceAll('regex', 'regret')
-  reply.content = reply.content.replaceAll('Regex', 'Regret')
-  reply.content = reply.content.replaceAll('rEgex', 'rEgret')
-  reply.content = reply.content.replaceAll('REgex', 'REgret')
-  reply.content = reply.content.replaceAll('reGex', 'reGret')
-  reply.content = reply.content.replaceAll('ReGex', 'ReGret')
-  reply.content = reply.content.replaceAll('rEGex', 'rEGret')
-  reply.content = reply.content.replaceAll('REGex', 'REGret')
-  reply.content = reply.content.replaceAll('regEx', 'regrEt')
-  reply.content = reply.content.replaceAll('RegEx', 'RegrEt')
-  reply.content = reply.content.replaceAll('rEgEx', 'rEgrEt')
-  reply.content = reply.content.replaceAll('REgEx', 'REgrEt')
-  reply.content = reply.content.replaceAll('reGEx', 'reGrEt')
-  reply.content = reply.content.replaceAll('ReGEx', 'ReGrEt')
-  reply.content = reply.content.replaceAll('rEGEx', 'rEGrEt')
-  reply.content = reply.content.replaceAll('REGEx', 'REGrEt')
-  reply.content = reply.content.replaceAll('regeX', 'regreT')
-  reply.content = reply.content.replaceAll('RegeX', 'RegreT')
-  reply.content = reply.content.replaceAll('rEgeX', 'rEgreT')
-  reply.content = reply.content.replaceAll('REgeX', 'REgreT')
-  reply.content = reply.content.replaceAll('reGeX', 'reGreT')
-  reply.content = reply.content.replaceAll('ReGeX', 'ReGreT')
-  reply.content = reply.content.replaceAll('rEGeX', 'rEGreT')
-  reply.content = reply.content.replaceAll('REGeX', 'REGreT')
-  reply.content = reply.content.replaceAll('regEX', 'regrET')
-  reply.content = reply.content.replaceAll('RegEX', 'RegrET')
-  reply.content = reply.content.replaceAll('rEgEX', 'rEgrET')
-  reply.content = reply.content.replaceAll('REgEX', 'REgrET')
-  reply.content = reply.content.replaceAll('reGEX', 'reGrET')
-  reply.content = reply.content.replaceAll('ReGEX', 'ReGrET')
-  reply.content = reply.content.replaceAll('rEGEX', 'rEGrET')
-  reply.content = reply.content.replaceAll('REGEX', 'REGrET')
+  reply.content = regret(reply.content)
 
   // fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
 
