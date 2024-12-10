@@ -327,11 +327,6 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.MODEL) ?
 
   if (reply.content === '') { return }
 
-  reply.content = reply.content.replaceAll("regex", "regret");
-  reply.content = reply.content.replaceAll("REGEX", "REGRET");
-  reply.content = reply.content.replaceAll("ReGex", "ReGret");
-  reply.content = reply.content.replaceAll("ReGeX", "ReGreT");
-
   // fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
 
   reply.content = makeSpecialsLlmUnfriendly(reply.content, msg.guild)
