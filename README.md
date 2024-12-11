@@ -21,7 +21,7 @@ node index.js
 
 # Environment variables
 - `DISCORD_TOKEN`: your [Discord bot](https://discord.com/developers/applications/) token.
-- `API_KEY`: your [Mistral AI](https://mistral.ai/) API key.
+- `MISTRAL_API_KEY`: your [Mistral AI](https://mistral.ai/) API key.
 - `MODEL`: the model to use for chat. Vision will be enabled automagically if your model is multi-modal.
 - `MAX_TOKENS`: maximum amount of tokens the `MODEL` can generate.
 - `TEMPERATURE`: the temperature to use for the `MODEL`.

@@ -2,7 +2,7 @@
 
 'use strict'
 
-import OpenAI from 'openai'
+import { Mistral } from '@mistralai/mistralai'
 import discord from 'discord.js'
 import fs from 'node:fs'
 import dotenv from 'dotenv'
@@ -18,7 +18,7 @@ let functionCache = {}
 
 if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!') }
 
-if (!process.env.API_KEY) { throw new Error('API_KEY is not set!') }
+if (!process.env.MISTRAL_API_KEY) { throw new Error('MISTRAL_API_KEY is not set!') }
 
 process.env.MAX_TOKENS = Number(process.env.MAX_TOKENS)
 process.env.MAX_TOKENS = Math.floor(process.env.MAX_TOKENS)
@@ -27,14 +27,11 @@ if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid int
 process.env.TEMPERATURE = Number(process.env.TEMPERATURE)
 if (isNaN(process.env.TEMPERATURE)) { console.warn('TEMPERATURE is not a valid number!'); process.env.TEMPERATURE = "" }
 
-const provider = new OpenAI({
-  apiKey: process.env.API_KEY,
-  baseURL: "https://api.mistral.ai/v1"
-})
+const mistral = new Mistral()
 
 let modelIsMultimodal = false;
 
-await provider.models.list().then((models) => {
+await mistral.models.list().then((models) => {
   if (!models.data.map(model => model.id).includes(process.env.MODEL)) {
     throw new Error(process.env.MODEL, 'is not a valid MODEL!')
   }
@@ -194,7 +191,6 @@ client.on('messageCreate', async (msg) => {
 - You are in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
 - UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
 - Use informal language with all-lowercase and only 1-2 sentences.
-${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.MODEL) ? `- You are provided image descriptions by the ${process.env.VISION_MODEL} model.` : ''}
 - Engage in role-playing actions only when requested.
 - Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
 - Avoid using "UwU" or "OwO" as they are deprecated, instead using ":3".
@@ -310,7 +306,7 @@ ${(process.env.VISION_MODEL && process.env.VISION_MODEL !== process.env.MODEL) ?
   try {
     while (true) {
       fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
-      let response = await provider.chat.completions.create({
+      let response = await mistral.chat.complete({
         model: process.env.MODEL,
         messages,
         tools: Object.values(tools).map(tool => tool.data),
