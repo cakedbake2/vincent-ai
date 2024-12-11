@@ -14,7 +14,7 @@ try {
   // assume environment variables are set in the environment
 }
 
-let functionCache = {}
+// const functionCache = {}
 
 if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!') }
 
@@ -22,14 +22,14 @@ if (!process.env.MISTRAL_API_KEY) { throw new Error('MISTRAL_API_KEY is not set!
 
 process.env.MAX_TOKENS = Number(process.env.MAX_TOKENS)
 process.env.MAX_TOKENS = Math.floor(process.env.MAX_TOKENS)
-if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid integer!'); process.env.MAX_TOKENS = "" }
+if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid integer!'); process.env.MAX_TOKENS = '' }
 
 process.env.TEMPERATURE = Number(process.env.TEMPERATURE)
-if (isNaN(process.env.TEMPERATURE)) { console.warn('TEMPERATURE is not a valid number!'); process.env.TEMPERATURE = "" }
+if (isNaN(process.env.TEMPERATURE)) { console.warn('TEMPERATURE is not a valid number!'); process.env.TEMPERATURE = '' }
 
 const mistral = new Mistral()
 
-let modelIsMultimodal = false;
+let modelIsMultimodal = false
 
 await mistral.models.list().then((models) => {
   if (!models.data.map(model => model.id).includes(process.env.MODEL)) {
@@ -38,7 +38,7 @@ await mistral.models.list().then((models) => {
 
   // check if the current model is .capabilities.vision
   if (models.data.find(model => model.id === process.env.MODEL).capabilities.vision) {
-    modelIsMultimodal = true;
+    modelIsMultimodal = true
   }
 })
 
@@ -114,7 +114,7 @@ function makeSpecialsLlmUnfriendly (content, guild) {
   return content
 }
 
-function regret(content) {
+function regret (content) {
   content = content.replaceAll('Regex', 'Regret')
   content = content.replaceAll('rEgex', 'rEgret')
   content = content.replaceAll('REgex', 'REgret')
@@ -265,7 +265,7 @@ client.on('messageCreate', async (msg) => {
               content.push({ type: 'image_url', imageUrl: attachment.url })
               imagesSoFar++
             } else {
-              content.push({ type: 'text', text: '[IMAGE OMITTED DUE TO 8 IMAGE MISTRAL API LIMIT]'})
+              content.push({ type: 'text', text: '[IMAGE OMITTED DUE TO 8 IMAGE MISTRAL API LIMIT]' })
             }
           }
         }
@@ -291,7 +291,7 @@ client.on('messageCreate', async (msg) => {
 
   try {
     while (true) {
-      fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
+      // fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
       let response = await mistral.chat.complete({
         model: process.env.MODEL,
         messages,
