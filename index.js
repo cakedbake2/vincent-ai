@@ -200,6 +200,8 @@ client.on('messageCreate', async (msg) => {
 
   channelMessages = channelMessages.reverse()
 
+  let imagesSoFar = 0
+
   for (let message of channelMessages) {
     message = message[1]
 
@@ -259,8 +261,11 @@ client.on('messageCreate', async (msg) => {
           attachment = attachment[1]
 
           if (attachment.contentType?.startsWith('image/') && modelIsMultimodal) {
-            if (process.env.MODEL === process.env.VISION_MODEL) {
+            if (imagesSoFar < 8) {
               content.push({ type: 'image_url', imageUrl: attachment.url })
+              imagesSoFar++
+            } else {
+              content.push({ type: 'text', text: '[IMAGE OMITTED DUE TO 8 IMAGE MISTRAL API LIMIT]'})
             }
           }
         }
@@ -279,25 +284,6 @@ client.on('messageCreate', async (msg) => {
       // 123 attachment(s): [ ... ]
 
       messages.push({ role: 'user', content })
-    }
-  }
-
-  if (true) {
-    let imagesSoFar = 0
-
-    // TO-DO: adjust this for 'image_url': { 'url': '...' } being 'imageUrl': '...'
-    for (let i = messages.length - 1; i >= 0; i--) { // start from the end of the array
-      if (typeof messages[i].content === 'string') { continue }
-
-      for (let j = messages[i].content.length - 1; j >= 0; j--) { // start from the end of the inner array
-        if (messages[i].content[j].type === 'image_url') {
-          imagesSoFar++
-
-          if (imagesSoFar > 8) {
-            messages[i].content.splice(j, 1)
-          }
-        }
-      }
     }
   }
 
