@@ -260,7 +260,7 @@ client.on('messageCreate', async (msg) => {
 
           if (attachment.contentType?.startsWith('image/') && modelIsMultimodal) {
             if (process.env.MODEL === process.env.VISION_MODEL) {
-              content.push({ type: 'image_url', image_url: { url: attachment.url } })
+              content.push({ type: 'image_url', imageUrl: attachment.url })
             }
           }
         }
@@ -285,7 +285,7 @@ client.on('messageCreate', async (msg) => {
   if (true) {
     let imagesSoFar = 0
 
-    // TO-DO: rework this AI-generated code
+    // TO-DO: adjust this for 'image_url': { 'url': '...' } being 'imageUrl': '...'
     for (let i = messages.length - 1; i >= 0; i--) { // start from the end of the array
       if (typeof messages[i].content === 'string') { continue }
 
