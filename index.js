@@ -183,22 +183,7 @@ client.on('messageCreate', async (msg) => {
     return
   }
 
-  const messages = [
-    {
-      role: 'system',
-      content:
-`- You are an AI assistant, based on the "${process.env.MODEL}" model, named ${client.user.tag}.
-- You are in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
-- UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
-- Use informal language with all-lowercase and only 1-2 sentences.
-- Engage in role-playing actions only when requested.
-- Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
-- Avoid using "UwU" or "OwO" as they are deprecated, instead using ":3".
-- Function calls are not visible to the user. If you are not certain about whether to call a function, don't call it.`
-    }
-  ]
-
-  channelMessages = channelMessages.reverse()
+  let messages = [ ]
 
   let imagesSoFar = 0
 
@@ -287,11 +272,30 @@ client.on('messageCreate', async (msg) => {
     }
   }
 
+  messages = messages.reverse()
+
+  messages = [
+    {
+      role: 'system',
+      content:
+`- You are an AI assistant, based on the "${process.env.MODEL}" model, named ${client.user.tag}.
+- You are in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
+- UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
+- Use informal language with all-lowercase and only 1-2 sentences.
+- Engage in role-playing actions only when requested.
+- Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
+- Avoid using "UwU" or "OwO" as they are deprecated, instead using ":3".
+- Function calls are not visible to the user. If you are not certain about whether to call a function, don't call it.`
+    },
+    ...messages
+  ]
+
   const reply = { content: '', files: [], embeds: [] }
 
   try {
     while (true) {
       // fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
+      // fs.writeFileSync('/tmp/dumps/dump-' + Date.now() + '.json', JSON.stringify(messages, null, 4))
       let response = await mistral.chat.complete({
         model: process.env.MODEL,
         messages,
