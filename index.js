@@ -206,7 +206,7 @@ client.on('messageCreate', async (msg) => {
 
       content[0].text += new Date().toISOString() + '\n'
       content[0].text += `<@${message.author.tag}>`
-      if (message.author.nickname) { content[0].text += ` (${message.author.nickname})` }
+      if (message.author.displayName) { content[0].text += ` (${message.author.displayName})` }
       if (message.author.bot) { content[0].text += ' (BOT)' }
       if (message.editedTimestamp) { content[0].text += ' (edited)' }
       if (message.type === 19) {
@@ -294,7 +294,6 @@ client.on('messageCreate', async (msg) => {
 
   try {
     while (true) {
-      // fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
       // fs.writeFileSync('/tmp/dumps/dump-' + Date.now() + '.json', JSON.stringify(messages, null, 4))
       let response = await mistral.chat.complete({
         model: process.env.MODEL,
@@ -351,8 +350,6 @@ client.on('messageCreate', async (msg) => {
   if (reply.content === '') { return }
 
   reply.content = regret(reply.content)
-
-  // fs.writeFileSync('/tmp/dump.json', JSON.stringify(messages, null, 4))
 
   reply.content = makeSpecialsLlmUnfriendly(reply.content, msg.guild)
 
