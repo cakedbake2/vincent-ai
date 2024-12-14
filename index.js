@@ -2,11 +2,11 @@
 
 'use strict'
 
-import { Mistral } from '@mistralai/mistralai'
-import discord from 'discord.js'
-import fs from 'node:fs'
-import dotenv from 'dotenv'
-import { evaluate } from 'mathjs'
+const { Mistral } = await import('@mistralai/mistralai')
+const discord = await import('discord.js')
+const fs = await import('fs')
+const dotenv = await import('dotenv')
+const { evaluate } = await import('mathjs')
 
 try {
   dotenv.config()
