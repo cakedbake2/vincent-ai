@@ -294,7 +294,7 @@ client.on('messageCreate', async (msg) => {
 
   try {
     while (true) {
-      fs.writeFileSync('/tmp/dumps/dump-' + Date.now() + '.json', JSON.stringify(messages, null, 4))
+      // fs.writeFileSync('/tmp/dumps/dump-' + Date.now() + '.json', JSON.stringify(messages, null, 4))
       let response = await mistral.chat.complete({
         model: process.env.MODEL,
         messages,
