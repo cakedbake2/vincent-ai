@@ -204,7 +204,7 @@ client.on('messageCreate', async (msg) => {
         continue
       }
 
-      content[0].text += new Date().toISOString() + '\n'
+      content[0].text += new Date(message.createdTimestamp).toISOString() + '\n'
       content[0].text += `<@${message.author.tag}>`
       if (message.author.displayName) { content[0].text += ` (${message.author.displayName})` }
       if (message.author.bot) { content[0].text += ' (BOT)' }
@@ -294,7 +294,7 @@ client.on('messageCreate', async (msg) => {
 
   try {
     while (true) {
-      // fs.writeFileSync('/tmp/dumps/dump-' + Date.now() + '.json', JSON.stringify(messages, null, 4))
+      fs.writeFileSync('/tmp/dumps/dump-' + Date.now() + '.json', JSON.stringify(messages, null, 4))
       let response = await mistral.chat.complete({
         model: process.env.MODEL,
         messages,
