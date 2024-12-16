@@ -8,11 +8,7 @@ const fs = await import('fs')
 const dotenv = await import('dotenv')
 const { evaluate } = await import('mathjs')
 
-try {
-  dotenv.config()
-} catch {
-  // assume environment variables are set in the environment
-}
+dotenv.config()
 
 // const functionCache = {}
 
@@ -183,7 +179,7 @@ client.on('messageCreate', async (msg) => {
     return
   }
 
-  let messages = [ ]
+  let messages = []
 
   let imagesSoFar = 0
 
@@ -290,7 +286,7 @@ client.on('messageCreate', async (msg) => {
     ...messages
   ]
 
-  if (messages[messages.length - 1].role === "assistant") { clearInterval(typer); return; }
+  if (messages[messages.length - 1].role === 'assistant') { clearInterval(typer); return }
 
   const reply = { content: '', files: [], embeds: [] }
 
