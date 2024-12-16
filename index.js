@@ -290,6 +290,8 @@ client.on('messageCreate', async (msg) => {
     ...messages
   ]
 
+  if (messages[messages.length - 1].role === "assistant") { clearInterval(typer); return; }
+
   const reply = { content: '', files: [], embeds: [] }
 
   try {
