@@ -157,16 +157,27 @@ const tools = {
   }
 }
 
+let lock = [];
+
+function unlock(target) {
+  lock = lock.filter(id => id !== target)
+}
+
 client.on('messageCreate', async (msg) => {
   if (msg.author.id === client.user.id) return
 
   if (isBlacklisted(msg.author.id) || isBlacklisted(msg.channel.id) || isBlacklisted(msg.guild.id)) { return }
 
-  if (!msg.mentions.users.has(client.user.id) || msg.author.bot) return
+  if (!msg.mentions.users.has(client.user.id) || msg.author.bot) { return }
+
+  if (lock.includes(msg.guild.id)) { return }
+
+  lock.push(msg.guild.id);
 
   try {
     await msg.channel.sendTyping()
   } catch {
+    unlock(msg.guild.id)
     return // an error here means we can't send messages, so don't even bother.
   }
 
@@ -179,6 +190,7 @@ client.on('messageCreate', async (msg) => {
     var channelMessages = await msg.channel.messages.fetch({ limit: 50 })
   } catch {
     clearInterval(typer)
+    unlock(msg.guild.id)
     return
   }
 
@@ -319,13 +331,15 @@ client.on('messageCreate', async (msg) => {
 
     // check if ./errors/ exists
     if (fs.existsSync('./errors/')) {
-      fs.writeFileSync('./errors/' + new Date().getTime() + '.json', JSON.stringify([messages, error.message, error.stack])) // once in heat death of universe race condition
+      try {
+        fs.writeFileSync('./errors/' + new Date().getTime() + '.json', JSON.stringify([messages, error.message, error.stack]))
+      } catch {}
     }
   }
 
   clearInterval(typer)
 
-  if (reply.content === '') { return }
+  if (reply.content === '') { unlock(msg.guild.id); return }
 
   // reply.content = regret(reply.content)
 
@@ -343,6 +357,8 @@ client.on('messageCreate', async (msg) => {
       await msg.channel.send(reply)
     } catch { /* ¯\_(ツ)_/¯ */ }
   }
+
+  unlock(msg.guild.id)
 })
 
 client.login(process.env.DISCORD_TOKEN)
