@@ -176,7 +176,7 @@ client.on('messageCreate', async (msg) => {
   // fetch 100 messages
   try {
     // eslint-disable-next-line no-var
-    var channelMessages = await msg.channel.messages.fetch({ limit: 100 })
+    var channelMessages = await msg.channel.messages.fetch({ limit: 50 })
   } catch {
     clearInterval(typer)
     return
