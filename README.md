@@ -1,4 +1,4 @@
-# Discord Clyde-inspired Mistral-based AI chatbot
+# Discord Clyde-inspired Anthropic-based AI chatbot
 
 ## How to run
 ### Prerequisites: Node.js version 18 or higher.
@@ -21,8 +21,8 @@ node index.js
 
 # Environment variables
 - `DISCORD_TOKEN`: your [Discord bot](https://discord.com/developers/applications/) token.
-- `MISTRAL_API_KEY`: your [Mistral AI](https://mistral.ai/) API key.
-- `MODEL`: the model to use for chat. Vision will be enabled automagically if your model is multi-modal.
+- `ANTHROPIC_API_KEY`: your [Anthropic](https://www.anthropic.com/) API key.
+- `MODEL`: the model to use for chat.
 - `MAX_TOKENS`: maximum amount of tokens the `MODEL` can generate.
 - `TEMPERATURE`: the temperature to use for the `MODEL`.
 
@@ -35,9 +35,8 @@ node index.js
 - A temperature of 2°C or above will make the bot generate total nonsense.
 
 # [cakedbake](https://github.com/cakedbake)'s recommended settings:
-- Set `MODEL` to `pixtral-large-latest`.
-- Warning: The Mistral API only allows providing a maximum of 8 images to Pixtral Large. If more are provided, it returns a `422` error. The bot accounts for this by only keeping the latest 8 images in the context.
-- Set `MAX_TOKENS` to `8000`.
+- Set `MODEL` to `claude-3-5-sonnet-20241022`.
+- Set `MAX_TOKENS` to `2000`.
 - Set `TEMPERATURE` to `0.0`. (optional: see [Temperature](#temperature)).
 
 # Error logging

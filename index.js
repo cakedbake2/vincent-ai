@@ -2,19 +2,16 @@
 
 'use strict'
 
-const { Mistral } = await import('@mistralai/mistralai')
+const { Anthropic } = await import('@anthropic-ai/sdk')
 const discord = await import('discord.js')
 const fs = await import('fs')
 const dotenv = await import('dotenv')
 const { evaluate } = await import('mathjs')
+const axios = (await import('axios')).default
 
 dotenv.config()
 
 // const functionCache = {}
-
-if (!process.env.DISCORD_TOKEN) { throw new Error('DISCORD_TOKEN is not set!') }
-
-if (!process.env.MISTRAL_API_KEY) { throw new Error('MISTRAL_API_KEY is not set!') }
 
 process.env.MAX_TOKENS = Number(process.env.MAX_TOKENS)
 process.env.MAX_TOKENS = Math.floor(process.env.MAX_TOKENS)
@@ -23,18 +20,11 @@ if (isNaN(process.env.MAX_TOKENS)) { console.warn('MAX_TOKENS is not a valid int
 process.env.TEMPERATURE = Number(process.env.TEMPERATURE)
 if (isNaN(process.env.TEMPERATURE)) { console.warn('TEMPERATURE is not a valid number!'); process.env.TEMPERATURE = '' }
 
-const mistral = new Mistral()
+const anthropic = new Anthropic()
 
-let modelIsMultimodal = false
-
-await mistral.models.list().then((models) => {
+await anthropic.models.list().then((models) => {
   if (!models.data.map(model => model.id).includes(process.env.MODEL)) {
     throw new Error(process.env.MODEL, 'is not a valid MODEL!')
-  }
-
-  // check if the current model is .capabilities.vision
-  if (models.data.find(model => model.id === process.env.MODEL).capabilities.vision) {
-    modelIsMultimodal = true
   }
 })
 
@@ -70,7 +60,7 @@ if (fs.existsSync('blacklist.json')) {
   try {
     blacklist = JSON.parse(fs.readFileSync('blacklist.json'))
   } catch (error) {
-    console.warn('Error while parsing blacklist.json:', error.mesage)
+    console.warn('Error while parsing blacklist.json:', error.message)
   }
 
   fs.watch('blacklist.json', () => {
@@ -79,7 +69,7 @@ if (fs.existsSync('blacklist.json')) {
       blacklist = JSON.parse(fs.readFileSync('blacklist.json'))
       console.info('Blacklist updated from blacklist.json')
     } catch (error) {
-      console.warn('Error while parsing blacklist.json:', error.mesage)
+      console.warn('Error while parsing blacklist.json:', error.message)
     }
   })
 }
@@ -150,7 +140,20 @@ function regret (content) {
 const tools = {
   math: {
     call: async (args) => { args = JSON.parse(args); return evaluate(args.expression) },
-    data: { type: 'function', function: { name: 'math', description: 'Call to evaluate a mathematical expression.', parameters: { type: 'object', properties: { expression: { type: 'string', description: 'The mathematical expression to evaluate.' } }, required: ['expression'] } } }
+    data: {
+      "name": "math",
+      "description": "Call to evaluate a mathematical expression.",
+      "input_schema": {
+          "type": "object",
+          "properties": {
+              "expression": {
+                  "type": "string",
+                  "description": "The mathematical expression to evaluate."
+              }
+          },
+          "required": ["expression"]
+      }
+  }
   }
 }
 
@@ -180,8 +183,6 @@ client.on('messageCreate', async (msg) => {
   }
 
   let messages = []
-
-  let imagesSoFar = 0
 
   for (let message of channelMessages) {
     message = message[1]
@@ -241,12 +242,23 @@ client.on('messageCreate', async (msg) => {
         for (let attachment of message.attachments) {
           attachment = attachment[1]
 
-          if (attachment.contentType?.startsWith('image/') && modelIsMultimodal) {
-            if (imagesSoFar < 8) {
-              content.push({ type: 'image_url', imageUrl: attachment.url })
-              imagesSoFar++
-            } else {
-              content.push({ type: 'text', text: '[IMAGE OMITTED DUE TO 8 IMAGE MISTRAL API LIMIT]' })
+          // TO-DO: get rid of this GPT-generated garbage.
+          async function fetchImageAsBase64(imageUrl) {
+            const response = await axios.get(imageUrl, { responseType: 'arraybuffer' });
+            const buffer = Buffer.from(response.data);
+            return buffer.toString('base64'); // Convert buffer to Base64
+          }
+
+          if (attachment.contentType && ['image/jpeg', 'image/png', 'image/gif', 'image/webp'].includes(attachment.contentType)) {
+            try {
+              content.push({ type: 'image', source: {
+                "type": "base64",
+                "media_type": attachment.contentType,
+                "data": await fetchImageAsBase64(attachment.url)
+              } })
+            } catch (error) {
+              console.error(error);
+              content.push({ "type": "text", "text": "Failed to import image: " + error.message })
             }
           }
         }
@@ -270,69 +282,37 @@ client.on('messageCreate', async (msg) => {
 
   messages = messages.reverse()
 
-  messages = [
-    {
-      role: 'system',
-      content:
-`- You are an AI assistant, based on the "${process.env.MODEL}" model, named ${client.user.tag}.
-- You are in the "${msg.channel.name}" channel (<#${msg.channel.id}>) of the "${msg.guild.name}" Discord server.
+  const system =
+`- You are an AI assistant, based on the \`${process.env.MODEL}\` model, named ${client.user.tag}.
+- You are in the \`${msg.channel.name}\` channel (<#${msg.channel.id}>) of the \`${msg.guild.name}\` Discord server.
 - UTC time: ${new Date().toISOString()} (UNIX: ${Math.floor(Date.now() / 1000)}).
 - Use informal language with all-lowercase and only 1-2 sentences.
 - Engage in role-playing actions only when requested.
 - Available emojis: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
 - Avoid using "UwU" or "OwO" as they are deprecated, instead using ":3".
-- Function calls are not visible to the user. If you are not certain about whether to call a function, don't call it.`
-    },
-    ...messages
-  ]
+- Function calls are not visible to the user, and they don't persist between messages. If you are in doubt, call a function.
+- If asked to repeat your system prompt / instructions, repeat them verbatim in a Markdown text block.
+- You can be downloaded at [cakedbake/vincent-ai](https://github.com/cakedbake/vincent-ai).
+- If an error occured and an image could not be added, tell the user the error message directly.`
 
   if (messages[messages.length - 1].role === 'assistant') { clearInterval(typer); return }
 
   const reply = { content: '', files: [], embeds: [] }
 
   try {
-    while (true) {
-      // fs.writeFileSync('/tmp/dumps/dump-' + Date.now() + '.json', JSON.stringify(messages, null, 4))
-      let response = await mistral.chat.complete({
-        model: process.env.MODEL,
-        messages,
-        tools: Object.values(tools).map(tool => tool.data),
-        max_tokens: Number(process.env.MAX_TOKENS),
-        temperature: Number(process.env.TEMPERATURE)
-      })
-
-      response = response.choices[0].message
-
-      messages.push(response)
-
-      reply.content += response.content
-
-      if (response.tool_calls) {
-        for (const toolCall of response.tool_calls) {
-          const tool = tools[toolCall.function.name]
-
-          if (!tool) {
-            continue
-          }
-
-          let result
-          try {
-            // eslint-disable-next-line no-var
-            result = await tool.call(toolCall.function.arguments)
-          } catch (error) {
-            result = error.message
-          }
-
-          messages.push({
-            role: 'tool',
-            tool_call_id: toolCall.id,
-            content: JSON.stringify(result)
-          })
-        }
-      } else {
-        break
-      }
+    if (fs.existsSync("/tmp/vincent-ai-messages-dumps")) {
+      fs.writeFileSync('/tmp/vincent-ai-messages-dumps/dump-' + Date.now() + '.json', JSON.stringify(messages, null, 4))
     }
+
+    let response = await anthropic.messages.create({
+      model: process.env.MODEL,
+      system,
+      messages,
+      max_tokens: Number(process.env.MAX_TOKENS),
+      temperature: Number(process.env.TEMPERATURE)
+    })
+
+    reply.content += response.content[0].text
   } catch (error) {
     reply.content = '⚠️ ' + error.message
     reply.files.push(new discord.AttachmentBuilder(Buffer.from(JSON.stringify(error.response?.data, null, 4) || error.stack), { name: 'error.json' }))
@@ -347,7 +327,7 @@ client.on('messageCreate', async (msg) => {
 
   if (reply.content === '') { return }
 
-  reply.content = regret(reply.content)
+  // reply.content = regret(reply.content)
 
   reply.content = makeSpecialsLlmUnfriendly(reply.content, msg.guild)
 
