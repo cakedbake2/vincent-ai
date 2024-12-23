@@ -245,6 +245,8 @@ client.on("messageCreate", async (msg) => {
 			if (message.attachments.size > 0) {
 				content[0].text += "\n\n";
 
+				message.attachments = message.attachments.reverse();
+
 				for (let attachment of message.attachments) {
 					attachment = attachment[1];
 
@@ -279,9 +281,7 @@ client.on("messageCreate", async (msg) => {
 	messages = messages.reverse();
 
 	messages = [
-		{
-			"role": "system",
-			"content":
+		{ "role": "system", "content":
 `You are an AI assistant deployed in a Discord server. Your task is to respond to user messages in a casual, friendly manner while adhering to specific guidelines. Here's your configuration:
 
 Identity:
@@ -293,7 +293,6 @@ Current UTC time: ${new Date().toISOString()} (UNIX timestamp: ${Math.floor(Date
 
 Language Style:
 - Use informal, all-lowercase language.
-- Limit your responses to 1-2 sentences.
 - You may use emojis from this list: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
 - Avoid using "UwU" or "OwO" as they are deprecated. Instead, use ":3" when appropriate.
 
@@ -309,100 +308,93 @@ Before responding, take a moment to consider the context and the best way to rep
 3. List potential responses and their appropriateness
 4. Choose the best response
 
-Now, provide your response to the user. Remember to keep it informal, all-lowercase, and limited to 1-2 sentences. You may include appropriate emojis from the provided list.`
-		},
+Now, provide your response to the user. You may include appropriate emojis from the provided list.` },
 		...messages,
 		{ "role": "assistant", "content": "<message_analysis>", "prefix": true }
-	];
+	]
 
 	const reply = { "content": "", "files": [], "embeds": [] };
 
 	let i = 0;
 
-	try {
-		while (true) {
-			if (fs.existsSync("/tmp/vincent-ai-messages-dumps")) {
-				fs.writeFileSync("/tmp/vincent-ai-messages-dumps/dump-" + Date.now() + ".json", JSON.stringify(messages, null, 4));
-			}
-			let response;
-			try {
-				response = await mistral.chat.complete({
-					"model": process.env.MODEL,
-					"messages": messages,
-					"tools": Object.values(tools).map(tool => tool.data),
-					"max_tokens": Number(process.env.MAX_TOKENS),
-					"temperature": Number(process.env.TEMPERATURE)
-				});
-			} catch (error) {
-				if (error.statusCode === 429 && i < 10) {
-					await new Promise(resolve => setTimeout(resolve, 1000));
-					i++;
-					continue;
-				} else {
-					throw error;
-				}
-			}
+	let content = "", analysis = "";
 
-			response = response.choices[0].message;
-
-			messages.push(response);
-
-			reply.content += response.content;
-
-			if (response.toolCalls) {;
-				for (const toolCall of response.toolCalls) {
-					const tool = tools[toolCall.function.name];
-
-					if (!tool) {
-						continue;
-					}
-
-					let result;
-					try {
-						result = await tool.call(toolCall.function.arguments);
-					} catch (error) {
-						result = error.message;
-					}
-
-					messages.push({
-						"role": "tool",
-						"name": toolCall.function.name,
-						"content": JSON.stringify(result),
-						"toolCallId": toolCall.id,
-						"tool_call_id": toolCall.id // even the docs have no idea which one is correct
-					});
-				}
+	while (true) {
+		fs.writeFileSync("/tmp/vincent-ai-messages-dumps/dump-" + new Date().getTime() + ".json", JSON.stringify(messages, null, 4));
+		let response;
+		try {
+			response = await mistral.chat.complete({
+				"model": process.env.MODEL,
+				"messages": messages,
+				"tools": Object.values(tools).map(tool => tool.data),
+				"max_tokens": Number(process.env.MAX_TOKENS),
+				"temperature": Number(process.env.TEMPERATURE)
+			});
+		} catch (error) {
+			if (error.statusCode === 429 && i < 10) {
+				await new Promise(resolve => setTimeout(resolve, 1000));
+				i++;
+				continue;
 			} else {
-				break;
+				throw error;
 			}
 		}
-	} catch (error) {
-		reply.content = "⚠️ " + error.message;
-		reply.files.push(new discord.AttachmentBuilder(Buffer.from(JSON.stringify(error.response?.data, null, 4) || error.stack), { name: "error.json" }));
 
-		if (fs.existsSync("./errors/")) {
-			try {
-				fs.writeFileSync("./errors/" + new Date().getTime() + ".json", JSON.stringify([messages, error.message, error.stack]));
-			} catch {}
+		response = response.choices[0].message;
+
+		messages.push(response);
+
+		content += response.content;
+
+		if (response.toolCalls) {
+			for (const toolCall of response.toolCalls) {
+				const tool = tools[toolCall.function.name];
+
+				if (!tool) {
+					continue;
+				}
+
+				let result;
+				try {
+					result = await tool.call(toolCall.function.arguments);
+				} catch (error) {
+					result = error.message;
+				}
+
+				messages.push({
+					"role": "tool",
+					"name": toolCall.function.name,
+					"content": JSON.stringify(result),
+					"toolCallId": toolCall.id,
+					"tool_call_id": toolCall.id // even the docs have no idea which one is correct
+				});
+			}
+		} else {
+			break;
 		}
 	}
 
 	clearInterval(typer)
 
-	if (reply.content === "" && reply.files.length === 0 && reply.embeds.length === 0) { return; }
+	// <button onclick="alert(1)">Hello World!</button>
 
-	// reply.content = regret(reply.content)
+	content = content.slice(18);
+	
+	if (content.split("</message_analysis>").length === 2) {
+		reply.content = content.split("</message_analysis>")[1];
+		reply.embeds.push({ "title": "<message_analysis>", "description": content.split("</message_analysis>")[0] });
+	} else {
+		reply.content = content;
+	}
 
 	reply.content = makeSpecialsLlmUnfriendly(reply.content, msg.guild);
-
-	// reply.embeds.push({ "title": "<message_analysis>", "description": reply.content.split("<message_analysis>")[1].split("</message_analysis>")[0] });
-	
-	reply.content = reply.content.split("<message_analysis>")[1].split("</message_analysis>")[1];
 
 	if (reply.content.length > 2000) {
 		reply.files.push(new discord.AttachmentBuilder(Buffer.from(reply.content), { name: "message.txt" }));
 		reply.content = reply.content.slice(0, 2000);
 	}
+
+	if (reply.content === "" && reply.files.length === 0 && reply.embeds.length === 0) { return; }
 
 	try {
 		await msg.reply(reply);
