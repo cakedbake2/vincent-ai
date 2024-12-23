@@ -317,7 +317,7 @@ Now, provide your response to the user. You may include appropriate emojis from 
 
 	let i = 0;
 
-	let content = "", analysis = "";
+	let content = "";
 
 	while (true) {
 		fs.writeFileSync("/tmp/vincent-ai-messages-dumps/dump-" + new Date().getTime() + ".json", JSON.stringify(messages, null, 4));
