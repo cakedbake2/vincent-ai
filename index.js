@@ -320,7 +320,7 @@ Now, provide your response to the user. You may include appropriate emojis from 
 	let content = "";
 
 	while (true) {
-		fs.writeFileSync("/tmp/vincent-ai-messages-dumps/dump-" + new Date().getTime() + ".json", JSON.stringify(messages, null, 4));
+		// fs.writeFileSync("/tmp/vincent-ai-messages-dumps/dump-" + new Date().getTime() + ".json", JSON.stringify(messages, null, 4));
 		let response;
 		try {
 			response = await mistral.chat.complete({
