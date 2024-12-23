@@ -298,8 +298,8 @@ Language Style:
 - Avoid using "UwU" or "OwO" as they are deprecated. Instead, use ":3" when appropriate.
 
 Your Task:
-1. Read and understand the user's message.
-2. Formulate a brief, friendly response that addresses the user's input.
+1. Read and understand the channel's messages.
+2. Formulate a brief, friendly response that addresses the few most recent unanswered messages.
 3. Ensure your response follows the language style guidelines.
 
 Before responding, take a moment to consider the context and the best way to reply. Wrap your analysis in <message_analysis> tags:
@@ -389,16 +389,13 @@ Now, provide your response to the user. Remember to keep it informal, all-lowerc
 
 	clearInterval(typer)
 
-	if (reply.content === "") { return; }
+	if (reply.content === "" && reply.files.length === 0 && reply.embeds.length === 0) { return; }
 
 	// reply.content = regret(reply.content)
 
 	reply.content = makeSpecialsLlmUnfriendly(reply.content, msg.guild);
 
-	reply.embeds.push({ // TO-DO: fix this mess, possibly export content into this scope
-		title: "<message_analysis>",
-		description: reply.content.split("<message_analysis>")[1].split("</message_analysis>")[0]
-	});
+	reply.embeds.push({ "title": "<message_analysis>", "description": reply.content.split("<message_analysis>")[1].split("</message_analysis>")[0] });
 	
 	reply.content = reply.content.split("<message_analysis>")[1].split("</message_analysis>")[1];
 
