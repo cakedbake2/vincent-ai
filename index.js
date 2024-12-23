@@ -382,7 +382,7 @@ Now, provide your response to the user. You may include appropriate emojis from 
 	
 	if (content.split("</message_analysis>").length === 2) {
 		reply.content = content.split("</message_analysis>")[1];
-		reply.embeds.push({ "title": "<message_analysis>", "description": content.split("</message_analysis>")[0] });
+		// reply.embeds.push({ "title": "<message_analysis>", "description": content.split("</message_analysis>")[0] });
 	} else {
 		reply.content = content;
 	}
