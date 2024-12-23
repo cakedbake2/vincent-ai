@@ -395,7 +395,7 @@ Now, provide your response to the user. Remember to keep it informal, all-lowerc
 
 	reply.content = makeSpecialsLlmUnfriendly(reply.content, msg.guild);
 
-	reply.embeds.push({ "title": "<message_analysis>", "description": reply.content.split("<message_analysis>")[1].split("</message_analysis>")[0] });
+	// reply.embeds.push({ "title": "<message_analysis>", "description": reply.content.split("<message_analysis>")[1].split("</message_analysis>")[0] });
 	
 	reply.content = reply.content.split("<message_analysis>")[1].split("</message_analysis>")[1];
 
