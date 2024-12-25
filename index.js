@@ -382,7 +382,9 @@ Now, provide your response to the user. You may include appropriate emojis from 
 
 	// <button onclick="alert(1)">Hello World!</button>
 
-	content = content.slice(18);
+	if (content.split("<message_analysis>").length === 2) {
+		content = content.split("<message_analysis>")[1];
+	}
 	
 	if (content.split("</message_analysis>").length === 2) {
 		reply.content = content.split("</message_analysis>")[1];
