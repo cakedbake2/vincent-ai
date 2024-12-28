@@ -383,12 +383,17 @@ Now, provide your response to the user. You may include appropriate emojis from 
 	// <button onclick="alert(1)">Hello World!</button>
 
 	if (content.split("<message_analysis>").length === 2) {
+		anaysis = content.split("</message_analysis>")[0];
 		content = content.split("<message_analysis>")[1];
 	}
 	
 	if (content.split("</message_analysis>").length === 2) {
 		reply.content = content.split("</message_analysis>")[1];
-		// reply.embeds.push({ "title": "<message_analysis>", "description": content.split("</message_analysis>")[0] });
+		if (analysis.content.length > 4096) {
+			// reply.embeds.push({ "title": "<message_analysis>", "description": analysis });
+		} else {
+			// reply.files.push(new discord.AttachmentBuilder(Buffer.from(analysis), { name: "analysis.txt" }))
+		}
 	} else {
 		reply.content = content;
 	}
