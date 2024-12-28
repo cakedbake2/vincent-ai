@@ -220,7 +220,7 @@ client.on("messageCreate", async (msg) => {
 			content[0].text += `<@${message.author.tag}>`;
 			message.author.displayName ? content[0].text += ` (${message.author.displayName})` : null;
 			message.author.bot ? content[0].text += " (BOT)" : null;
-			message.editedTimestamp ? content[0].text += " (edited)" : null;			
+			message.editedTimestamp ? content[0].text += " (edited)" : null;
 			if (message.type === 19) {
 				try {
 					content[0].text += ` (replying to <@${(await message.fetchReference()).author.tag || "unknown"}>)`;
@@ -386,7 +386,7 @@ Now, provide your response to the user. You may include appropriate emojis from 
 		anaysis = content.split("</message_analysis>")[0];
 		content = content.split("<message_analysis>")[1];
 	}
-	
+
 	if (content.split("</message_analysis>").length === 2) {
 		reply.content = content.split("</message_analysis>")[1];
 		if (analysis.content.length > 4096) {
