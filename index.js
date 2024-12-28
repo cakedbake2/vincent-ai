@@ -378,7 +378,7 @@ Now, provide your response to the user. You may include appropriate emojis from 
 		}
 	}
 
-	clearInterval(typer)
+	clearInterval(typer);
 
 	// <button onclick="alert(1)">Hello World!</button>
 
