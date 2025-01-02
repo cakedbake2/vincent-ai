@@ -202,11 +202,7 @@ client.on("messageCreate", async (msg) => {
 			if (message.type === 7) {
 				messages.push({ "role": "assistant", "content": `<@${message.author.id}> joined the server.` });
 			} else {
-				messages.push({ "role": "assistant", "content":
-					new Date(message.createdTimestamp).toISOString() + "\n" +
-					client.user.tag + (message.author.displayName ? ` (${message.author.displayName})` : "") + ":\n" +
-					makeSpecialsLlmFriendly(message.content) || "[NO CONTENT]"
-				});
+				messages.push({ "role": "assistant", "content": makeSpecialsLlmFriendly(message.content) || "[NO CONTENT]" });
 			}
 		} else {
 			let content = [{ "type": "text", "text": "" }];
@@ -314,7 +310,7 @@ Before responding, take a moment to consider the context and the best way to rep
 
 Now, provide your response to the user. You may include appropriate emojis from the provided list.` },
 		...messages,
-		{ "role": "assistant", "content": new Date().toISOString() + "\n" + client.user.tag + (msg.guild.members.me.displayName ? ` (${msg.guild.members.me.displayName})` : "") + ":\n<message_analysis>\n", "prefix": true }
+		{ "role": "assistant", "content": "<message_analysis>\n", "prefix": true }
 	]
 
 	const reply = { "content": "", "files": [], "embeds": [] };
