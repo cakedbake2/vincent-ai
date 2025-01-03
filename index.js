@@ -277,6 +277,7 @@ client.on("messageCreate", async (msg) => {
 			//
 			// Reactions: { ... }
 			// 123 attachment(s): [ ... ]
+			// 123 embed(s): [ ... ]
 
 			messages.push({ "role": "user", "content": content });
 		}
@@ -340,7 +341,13 @@ Now, provide your response to the user. You may include appropriate emojis from 
 				i++;
 				continue;
 			} else {
-				throw error;
+				// reply.files.push(new discord.AttachmentBuilder(Buffer.from(reply.content), { name: "message.txt" }));
+				return await msg.reply({
+					"content": "⚠️ " + error.message,
+					"files": [
+						new discord.AttachmentBuilder(Buffer.from(error.stack), { "name": "error.json" })
+					]
+				}).catch(x);
 			}
 		}
 
