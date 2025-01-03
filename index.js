@@ -263,6 +263,10 @@ client.on("messageCreate", async (msg) => {
 				content[0].text += message.attachments.size + " attachment(s): " + JSON.stringify(Array.from(message.attachments.values()));
 			}
 
+			if (message.embeds.length) {
+				content[0].text += message.embeds.length + " embed(s): " + JSON.stringify(message.embeds);
+			}
+
 			if (content.length === 1) {
 				content = content[0].text;
 			}
