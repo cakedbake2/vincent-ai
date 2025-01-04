@@ -45,6 +45,10 @@ const shutdown = async (i) => {
 	console.log("Terminating:", i);
 
 	try {
+		fs.writeFileSync("./errors/" + new Date().getTime() + ".txt", i.stack || (i.toString ? i.toString() : JSON.stringify(i)));
+	} catch (error) { console.log(error); }
+
+	try {
 		await client.user.setPresence({
 			"status": "invisible",
 			"activities": []

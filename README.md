@@ -42,7 +42,8 @@ node index.js
 
 # Error logging
 - Create a directory named `errors` for the bot to store errors within it.
-- If it encounters an error during inference, it will log the error to `errors` as `./errors/X.json` where X is the UNIX timestamp at time of error with milliseconds.
+- If it encounters an unhandled error, it will log the error to `errors` as `./errors/X.json` where X is the UNIX timestamp at time of error with milliseconds.
+- If your instance *does* crash, I'd appreciate it if you could [open a new issue](https://codeberg.org/cakedbake/vincent-ai/issues/new) and paste the error log there.
 
 # Blacklisting
 - You can blacklist a user, a channel, or a guild by adding its ID to the `blacklist.json` file, like this:
