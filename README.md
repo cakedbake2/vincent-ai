@@ -4,7 +4,7 @@
 ### Prerequisites: Node.js version 18 or higher.
 1. Clone this repository like this:
 ```bash
-git clone https://github.com/cakedbake/vincent-ai.git
+git clone https://codeberg.org/cakedbake/vincent-ai.git
 ```
 2. `cd` into the repository:
 ```bash
@@ -34,7 +34,7 @@ node index.js
 - A temperature of 1.5°C will make the bot borderline incoherent.
 - A temperature of 2°C or above will make the bot generate total nonsense.
 
-# [cakedbake](https://github.com/cakedbake)'s recommended settings:
+# [cakedbake](https://codeberg.org/cakedbake)'s recommended settings:
 - Set `MODEL` to `pixtral-large-latest`.
 - Warning: The Mistral API only allows providing a maximum of 8 images to Pixtral Large. If more are provided, it returns a `422` error. The bot accounts for this by only keeping the latest 8 images in the context.
 - Set `MAX_TOKENS` to `8000`.
