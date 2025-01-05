@@ -23,8 +23,8 @@ node index.js
 - `DISCORD_TOKEN`: your [Discord bot](https://discord.com/developers/applications/) token.
 - `MISTRAL_API_KEY`: your [Mistral AI](https://mistral.ai/) API key.
 - `MODEL`: the model to use for chat. Vision will be enabled automagically if your model is multi-modal.
-- `MAX_TOKENS`: maximum amount of tokens the `MODEL` can generate.
-- `TEMPERATURE`: the temperature to use for the `MODEL`.
+- `MAX_TOKENS`: (optional) maximum amount of tokens the `MODEL` can generate.
+- `TEMPERATURE`: (optional) the temperature to use for the `MODEL`.
 
 # Temperature
 - A temperature of 0°C will make the bot's responses deterministic and repetitive.
