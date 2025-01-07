@@ -46,7 +46,7 @@ const shutdown = async (i) => {
 
 	try {
 		fs.writeFileSync("./errors/" + new Date().getTime() + ".txt", i.stack || (i.toString ? i.toString() : JSON.stringify(i)));
-	} catch (error) { console.log(error); }
+	} catch {}
 
 	try {
 		await client.user.setPresence({
@@ -302,7 +302,7 @@ Current UTC time: ${new Date().toISOString()} (UNIX timestamp: ${Math.floor(Date
 
 Language Style:
 - Use informal, all-lowercase language.
-- You may use emojis from this list: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}.
+- You may use emojis from this list: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}. Note: you must say the emojis out in full form. Saying :trans: won't work, but saying <:trans:1326253058044203018> will.
 - Avoid using "UwU" or "OwO" as they are deprecated. Instead, use ":3" when appropriate.
 
 Your Task:
@@ -312,7 +312,7 @@ Your Task:
 
 Before responding, take a moment to consider the context and the best way to reply. Wrap your analysis in <message_analysis> tags:
 
-1. Note key points from the user's message
+1. Note key points from the user's messages
 2. Consider the context (channel, server, time)
 3. List potential responses and their appropriateness
 4. Choose the best response
