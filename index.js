@@ -218,7 +218,7 @@ client.on("messageCreate", async (msg) => {
 
 			content[0].text += new Date(message.createdTimestamp).toISOString() + "\n";
 			content[0].text += `<@${message.author.tag}>`;
-			message.member.nickname ? content[0].text += ` (${message.member.nickname})` : null;
+			message.member?.nickname ? content[0].text += ` (${message.member.nickname})` : null;
 			message.author.bot ? content[0].text += " (BOT)" : null;
 			message.editedTimestamp ? content[0].text += " (edited)" : null;
 			if (message.type === 19) {
