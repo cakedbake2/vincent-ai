@@ -218,7 +218,7 @@ client.on("messageCreate", async (msg) => {
 
 			content[0].text += new Date(message.createdTimestamp).toISOString() + "\n";
 			content[0].text += `<@${message.author.tag}>`;
-			message.author.displayName ? content[0].text += ` (${message.author.displayName})` : null;
+			message.member.nickname ? content[0].text += ` (${message.member.nickname})` : null;
 			message.author.bot ? content[0].text += " (BOT)" : null;
 			message.editedTimestamp ? content[0].text += " (edited)" : null;
 			if (message.type === 19) {
@@ -302,7 +302,7 @@ Current UTC time: ${new Date().toISOString()} (UNIX timestamp: ${Math.floor(Date
 
 Language Style:
 - Use informal, all-lowercase language.
-- You may use emojis from this list: ${JSON.stringify(msg.guild.emojis.cache.map(emoji => `<:${emoji.name}:${emoji.id}>`))}. Note: you must say the emojis out in full form. Saying ${msg.guild.emojis.cache.first().name} won't work, but saying <:${msg.guild.emojis.cache.first().name}:${msg.guild.emojis.cache.first().id}> will.
+- You may use emojis from this list: ${JSON.stringify(msg.guild.emojis.cache.filter(e => !e.animated).map(e => `<:${e.name}:${e.id}>`))}.
 - Avoid using "UwU" or "OwO" as they are deprecated. Instead, use ":3" when appropriate.
 
 Your Task:
